@@ -48,7 +48,7 @@ void pthipth_q_state_display()
     do
     {
 	//printf(" %d\n", p->state);
-	printf(" %d prio: %d\n", p->tid, p->sched_futex.priority);
+	printf(" %d prio: %d\n", p->tid, p->priority);
 	p = p->next;
     } while (p != pthipth_q_head);
 }

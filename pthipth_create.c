@@ -24,7 +24,6 @@ futex_t global_futex;
 #define DEFAULT_PRIORITY 30
 #define LOWEST_PRIORITY 31
 
-
 static int __pthipth_add_main_tcb()
 {
     pthipth_private_t *main_tcb = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
@@ -40,8 +39,8 @@ static int __pthipth_add_main_tcb()
     main_tcb->return_value = NULL;
     main_tcb->blockedForJoin = NULL;
     main_tcb->tid = __pthipth_gettid();
+    main_tcb->priority = LOWEST_PRIORITY;
 
-    main_tcb->sched_futex.priority = LOWEST_PRIORITY;
     futex_init(&main_tcb->sched_futex, 1);
 
     pthipth_prio_insert(main_tcb);
@@ -96,7 +95,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;
 
-    new_node->sched_futex.priority = priority;
+    new_node->priority = priority;
     futex_init(&new_node->sched_futex, 0);
 
     pthipth_prio_insert(new_node);

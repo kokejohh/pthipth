@@ -29,12 +29,12 @@ void pthipth_prio_insert(pthipth_private_t *node)
     pthipth_private_t *tmp = pthipth_prio_head;
     while (1)
     {
-	if (node->sched_futex.priority == tmp->sched_futex.priority)
+	if (node->priority == tmp->priority)
 	{
 	    action = inside;
 	    break;
 	}
-	else if (node->sched_futex.priority < tmp->sched_futex.priority)
+	else if (node->priority < tmp->priority)
 	{
 	    action = insert;
 	    break;
@@ -63,7 +63,7 @@ void pthipth_prio_insert(pthipth_private_t *node)
 	node->inside_next = node;
 	node->inside_prev = node;
 
-	if (node->sched_futex.priority < pthipth_prio_head->sched_futex.priority)
+	if (node->priority < pthipth_prio_head->priority)
 	{
 	    node->prev = NULL;
 
@@ -193,11 +193,11 @@ void pthipth_prio_display()
     pthipth_private_t *tmp = pthipth_prio_head;
     do
     {
-	printf("priority %d\n", tmp->sched_futex.priority);
+	printf("priority %d\n", tmp->priority);
 	pthipth_private_t *inside_tmp = tmp;
 	do
 	{
-	    printf("tid %d prio: %d futex: %d state: %d\n", inside_tmp->tid, inside_tmp->sched_futex.priority, inside_tmp->sched_futex.count, inside_tmp->state); 
+	    printf("tid %d prio: %d futex: %d state: %d\n", inside_tmp->tid, inside_tmp->priority, inside_tmp->sched_futex.count, inside_tmp->state); 
 	    inside_tmp = inside_tmp->inside_next;    
 	} while (inside_tmp != tmp);
 	tmp = tmp->next;

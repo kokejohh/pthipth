@@ -12,14 +12,13 @@
 typedef struct futex
 {
     atomic_int count;
-    int priority;
 } futex_t;
 
 
 // Down and up operations
-extern int sys_futex(atomic_int *, int, int, const struct timespec *);
-extern int __futex_down_slow(futex_t *, int, struct timespec *);
-extern int __futex_up_slow(futex_t *);
+int sys_futex(atomic_int *, int, int, const struct timespec *);
+int __futex_down_slow(futex_t *, int, struct timespec *);
+int __futex_up_slow(futex_t *);
 
 static inline int futex_down_timeout(futex_t *futx, struct timespec *relative)
 {

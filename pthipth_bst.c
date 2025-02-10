@@ -71,7 +71,7 @@ void traversal(pthipth_private_t *node)
 {
     if (node == NULL) return;
     traversal(node->left);
-    printf("tid(%d) prio: %d\n", node->tid, node->sched_futex.priority);
+    printf("tid(%d) prio: %d\n", node->tid, node->priority);
     traversal(node->right);
 }
 

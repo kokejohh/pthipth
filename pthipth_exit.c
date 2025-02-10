@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <sys/syscall.h>
+
 #include "pthipth_prio.h"
 
 static void __pthipth_do_exit()
@@ -7,17 +10,17 @@ static void __pthipth_do_exit()
 
 void pthipth_exit(void *return_val)
 {
-    pthipth_private_t *self_ptr = __pthipth_selfptr();
+    pthipth_private_t *self = __pthipth_selfptr();
 
-    self_ptr->state = DEFUNCT;
-    self_ptr->return_value = return_val;
+    self->state = DEFUNCT;
+    self->return_value = return_val;
 
-    if (self_ptr->blockedForJoin != NULL)
-	self_ptr->blockedForJoin->state = READY;
+    if (self->blockedForJoin != NULL)
+	self->blockedForJoin->state = READY;
 
-    pthipth_prio_delete(self_ptr);
+    pthipth_prio_delete(self);
 
-    __pthipth_dispatcher(self_ptr, 1);
+    __pthipth_dispatcher(self, 1);
 
     __pthipth_do_exit();
 }

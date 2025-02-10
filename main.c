@@ -14,7 +14,7 @@ void *child_function(void *arg)
     pid_t tid = __pthipth_gettid();
     printf("before tid %d\n", __pthipth_gettid());
 
-    pthipth_mutex_unlock(&hate);
+//    pthipth_mutex_unlock(&hate);
     pthipth_mutex_lock(&hate);
     pthipth_yield();
     num++;
@@ -70,5 +70,5 @@ int main()
     }
     pthipth_avl_display();
     pthipth_prio_display();
-    sleep(2);
+    sleep(1);
 }

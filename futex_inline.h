@@ -1,17 +1,12 @@
 #ifndef FUTEX_INLINE_H
 #define FUTEX_INLINE_H
 
-#define __GNU_SOURCE
 #include <stdatomic.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <stdio.h>
 
 // atomic decrement: return new value. 0, -1
 static inline int __futex_down(atomic_int *counter)
 {
-    int value = atomic_load(counter);
-    if (value < 0) return value;
+    int value;
 
     do
     {

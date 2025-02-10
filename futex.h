@@ -4,9 +4,7 @@
 #ifndef _FUTEX_H
 #define _FUTEX_H
 
-#include <linux/futex.h>
-#include <stdatomic.h>
-#include <sys/time.h>
+#include <time.h>
 
 #include "futex_inline.h"
 
@@ -19,7 +17,7 @@ typedef struct futex
 
 
 // Down and up operations
-extern int sys_futex(atomic_int *, int, int, const struct timespec *, unsigned bitset);
+extern int sys_futex(atomic_int *, int, int, const struct timespec *);
 extern int __futex_down_slow(futex_t *, int, struct timespec *);
 extern int __futex_up_slow(futex_t *);
 

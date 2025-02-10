@@ -143,7 +143,7 @@ void traversal_inorder(pthipth_private_t *node)
     if (node == NULL) return;
 
     traversal_inorder(node->left);
-    printf("tid(%d) h: %d state: %d\n", node->tid, node->height, node->state);
+    printf("tid(%d) prio: %d h: %d state: %d\n", node->tid, node->priority, node->height, node->state);
     traversal_inorder(node->right);
 }
 

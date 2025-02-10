@@ -199,7 +199,7 @@ void pthipth_prio_display()
 	pthipth_private_t *inside_tmp = tmp;
 	do
 	{
-	    printf("tid %d prio: %d futex: %d state: %d\n", inside_tmp->tid, inside_tmp->priority, inside_tmp->sched_futex.count, inside_tmp->state); 
+	    printf("tid %d prio: %d state: %d\n", inside_tmp->tid, inside_tmp->priority, inside_tmp->state); 
 	    inside_tmp = inside_tmp->inside_next;    
 	} while (inside_tmp != tmp);
 	tmp = tmp->next;

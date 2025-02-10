@@ -129,7 +129,9 @@ pthipth_private_t *pthipth_prio_extract()
     pthipth_prio_head = tmp->inside_next;
 
     pthipth_prio_head->next = tmp->next;
+    pthipth_prio_head->next->prev = tmp->inside_next;
     pthipth_prio_head->prev = NULL;
+    tmp->next = tmp->prev = NULL;
 
     return tmp;
 }

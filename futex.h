@@ -4,7 +4,7 @@
 #ifndef _FUTEX_H
 #define _FUTEX_H
 
-#include <time.h>
+#include <sys/time.h>
 
 #include "futex_inline.h"
 

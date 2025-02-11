@@ -31,7 +31,7 @@ typedef struct pthipth_private {
     void *return_value;
     struct pthipth_private *blockedForJoin;
     futex_t sched_futex;
-    int priority;
+    int priority, init_priority, tmp_priority;
     // Bucket queue
     struct pthipth_private *prev, *next, *inside_prev, *inside_next;
     // AVL tree

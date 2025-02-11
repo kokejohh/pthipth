@@ -14,7 +14,6 @@
 #include <sys/types.h>
 
 extern int pthipth_wrapper(void *);
-extern void *pthipth_idle(void *);
 
 extern pthipth_private_t *pthipth_prio_head;
 
@@ -60,9 +59,6 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
 	if (return_value != 0) return return_value;
 
 	futex_init(&global_futex, 1);
-	
-	//pthipth_t idle_u_tcb;
-	//pthipth_create(&idle_u_tcb, NULL, pthipth_idle, NULL);
     }
 
     pthipth_private_t *new_node = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
@@ -94,8 +90,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_node->state = READY;
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;
-
     new_node->priority = priority;
+
     futex_init(&new_node->sched_futex, 0);
 
     pthipth_prio_insert(new_node);
@@ -109,6 +105,9 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_thread_ID->tid = new_node->tid = tid;
 
     pthipth_avl_insert(new_node);
+
+    // in the future
+    //futex_up(&new_node->sched_futex);
 
     return 0;
 }

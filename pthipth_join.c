@@ -20,7 +20,6 @@ int pthipth_join(pthipth_t target_thread, void **status)
     target->blockedForJoin = self_ptr;
 
     self_ptr->state = BLOCKED;
-    printf("tid %d state %d\n", self_ptr->tid, self_ptr->state);
 
     pthipth_yield();
 

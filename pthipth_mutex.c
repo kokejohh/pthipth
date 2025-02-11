@@ -47,7 +47,7 @@ void pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 
     pthipth_private_t *owner = pthipth_avl_search(mutex->owner.tid);
 
-    owner->priority = owner->tmp_priority;
+    owner->priority = owner->old_priority;
 
     mutex->owner = init_owner;
     // assign futex is 1 to futex up

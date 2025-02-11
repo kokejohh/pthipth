@@ -38,7 +38,7 @@ static int __pthipth_add_main_tcb()
     main_tcb->return_value = NULL;
     main_tcb->blockedForJoin = NULL;
     main_tcb->tid = __pthipth_gettid();
-    main_tcb->priority = main_tcb->init_priority = main_tcb->tmp_priority = LOWEST_PRIORITY;
+    main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = LOWEST_PRIORITY;
 
     futex_init(&main_tcb->sched_futex, 1);
 
@@ -90,7 +90,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_node->state = READY;
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;
-    new_node->priority = new_node->init_priority = new_node->tmp_priority = priority;
+    new_node->priority = new_node->init_priority = new_node->old_priority = priority;
 
     futex_init(&new_node->sched_futex, 0);
 

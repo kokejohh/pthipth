@@ -1,3 +1,6 @@
+// Don't forget cas
+#include <errno.h>
+
 #include "pthipth_mutex.h"
 #include "pthipth.h"
 #include "pthipth_prio.h"
@@ -7,14 +10,15 @@ pthipth_t init_owner = {
     .tid = 0
 };
 
-void pthipth_mutex_init(pthipth_mutex_t *mutex)
+int pthipth_mutex_init(pthipth_mutex_t *mutex)
 {
     futex_init(&mutex->futx, 1);
 
     mutex->owner = init_owner;
+    return 0;
 }
     
-void pthipth_mutex_lock(pthipth_mutex_t *mutex)
+int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 {
     // If have mutex owner
     if (mutex->owner.tid != 0) 
@@ -35,14 +39,21 @@ void pthipth_mutex_lock(pthipth_mutex_t *mutex)
     }
 
     mutex->owner = pthipth_self();
+    return 0;
 }
 
-void pthipth_mutex_unlock(pthipth_mutex_t *mutex)
+int pthipth_mutex_trylock(pthipth_mutex_t *mutex)
+{
+    if (mutex->owner.tid) return EBUSY;
+    return pthipth_mutex_lock(mutex);
+}
+
+int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 {
     if (mutex->owner.tid != __pthipth_gettid())
     {
 	printf("mutex unlock error: not owner unlock!\n");
-	return;
+	return -1;
     }
 
     pthipth_private_t *owner = pthipth_avl_search(mutex->owner.tid);
@@ -52,5 +63,6 @@ void pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     mutex->owner = init_owner;
     // assign futex is 1 to futex up
     futex_init(&mutex->futx, 1);
+    return 0;
 }
 

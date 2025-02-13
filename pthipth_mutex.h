@@ -6,12 +6,15 @@
 typedef struct pthipth_mutex {
     futex_t futx;
     pthipth_t owner;
+    atomic_int status;
 } pthipth_mutex_t;
 
-void pthipth_mutex_init(pthipth_mutex_t *mutex);
+int pthipth_mutex_init(pthipth_mutex_t *mutex);
 
-void pthipth_mutex_lock(pthipth_mutex_t *mutex);
+int pthipth_mutex_lock(pthipth_mutex_t *mutex);
 
-void pthipth_mutex_unlock(pthipth_mutex_t *mutex);
+int pthipth_mutex_trylock(pthipth_mutex_t *mutex);
+
+int pthipth_mutex_unlock(pthipth_mutex_t *mutex);
 
 #endif

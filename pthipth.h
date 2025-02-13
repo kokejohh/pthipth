@@ -7,11 +7,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+
 #include "futex.h"
 #include "pthipth_debug.h"
 
-enum student {
-    RUNNING, READY, BLOCKED, DEFUNCT
+enum pthipth_state {
+    RUNNING, READY, BLOCKED, SLEEPING, DEFUNCT
 };
 
 typedef struct pthipth_attr {
@@ -32,6 +34,8 @@ typedef struct pthipth_private {
     struct pthipth_private *blockedForJoin;
     futex_t sched_futex;
     int priority, init_priority, old_priority;
+    time_t wake_time;
+    time_t last_selected;
     // Bucket queue
     struct pthipth_private *prev, *next, *inside_prev, *inside_next;
     // AVL tree
@@ -48,6 +52,8 @@ int pthipth_yield(void);
 int pthipth_join(pthipth_t target_thread, void **status);
 
 void pthipth_exit(void *retval);
+
+void pthipth_sleep(time_t millisec);
 
 pid_t __pthipth_gettid();
 

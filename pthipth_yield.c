@@ -2,11 +2,24 @@
 
 extern futex_t global_futex;
 
+extern void __pthipth_aging();
+
+extern time_t getcurrenttime_millisec();
+
 int __pthipth_dispatcher(pthipth_private_t *node, int killed)
 {
+
     pthipth_private_t *tmp = pthipth_prio_extract();
+    tmp->last_selected = getcurrenttime_millisec();
 
     if (tmp == node) return -1;
+    else
+    {
+	// pre-selection aging
+	printf("start -------- start\n");
+	__pthipth_aging();
+	printf("end -------- end\n");
+    }
 
     futex_up(&tmp->sched_futex);
 

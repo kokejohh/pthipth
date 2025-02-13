@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <sched.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "futex.h"
 #include "pthipth.h"
@@ -14,6 +15,8 @@
 #include <sys/types.h>
 
 extern int pthipth_wrapper(void *);
+
+extern time_t getcurrenttime_millisec();
 
 extern pthipth_private_t *pthipth_prio_head;
 
@@ -39,6 +42,7 @@ static int __pthipth_add_main_tcb()
     main_tcb->blockedForJoin = NULL;
     main_tcb->tid = __pthipth_gettid();
     main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = LOWEST_PRIORITY;
+    main_tcb->last_selected = getcurrenttime_millisec();
 
     futex_init(&main_tcb->sched_futex, 1);
 
@@ -91,6 +95,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;
     new_node->priority = new_node->init_priority = new_node->old_priority = priority;
+    new_node->last_selected = getcurrenttime_millisec();
 
     futex_init(&new_node->sched_futex, 0);
 

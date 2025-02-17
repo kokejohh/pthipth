@@ -7,10 +7,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
 
 #include "futex.h"
 #include "pthipth_debug.h"
+
+#define HIGHEST_PRIORITY 0
+#define DEFAULT_PRIORITY 30
+#define LOWEST_PRIORITY 31
+
+#define TIME_SLICE 500
 
 enum pthipth_state {
     RUNNING, READY, BLOCKED, SLEEPING, DEFUNCT

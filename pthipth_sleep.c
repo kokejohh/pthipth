@@ -2,7 +2,8 @@
 #include "pthipth_prio.h"
 #include "pthipth_q.h"
 
-extern time_t getcurrenttime_millisec();
+extern time_t gettime_ms();
+
 extern pthipth_private_t *pthipth_q_head;
 
 void pthipth_sleep(time_t millisec)
@@ -11,7 +12,7 @@ void pthipth_sleep(time_t millisec)
 
     printf("sleep I love you %d\n", self->tid);
     self->state = SLEEPING;
-    self->wake_time = getcurrenttime_millisec() + millisec;
+    self->wake_time = gettime_ms() + millisec;
 
     pthipth_prio_delete(self);
     
@@ -27,7 +28,7 @@ void check_sleepting()
     while (tmp != tmp->next)
     {
 	pthipth_private_t *tmp2 = tmp->next;
-	if (tmp->state == SLEEPING && getcurrenttime_millisec() >= tmp->wake_time)
+	if (tmp->state == SLEEPING && gettime_ms() >= tmp->wake_time)
 	{
 	    tmp->state = READY;
 	    pthipth_q_delete(tmp);

@@ -16,15 +16,11 @@
 
 extern int pthipth_wrapper(void *);
 
-extern time_t getcurrenttime_millisec();
+extern time_t gettime_ms();
 
 extern pthipth_private_t *pthipth_prio_head;
 
 futex_t global_futex;
-
-#define HIGHEST_PRIORITY 0
-#define DEFAULT_PRIORITY 30
-#define LOWEST_PRIORITY 31
 
 static int __pthipth_add_main_tcb()
 {
@@ -42,7 +38,7 @@ static int __pthipth_add_main_tcb()
     main_tcb->blockedForJoin = NULL;
     main_tcb->tid = __pthipth_gettid();
     main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = LOWEST_PRIORITY;
-    main_tcb->last_selected = getcurrenttime_millisec();
+    main_tcb->last_selected = gettime_ms();
 
     futex_init(&main_tcb->sched_futex, 1);
 
@@ -52,6 +48,14 @@ static int __pthipth_add_main_tcb()
     return 0;
 }
 
+extern void set_time_slice(int ms);
+
+void time_slice()
+{
+    printf("timer interrupt %d\n", __pthipth_gettid());
+    pthipth_yield();
+}
+
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start_func)(void *), void *arg)
 {
     //int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGNAL | CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID |  CLONE_PARENT_SETTID );
@@ -59,6 +63,11 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD);
     if (pthipth_prio_head == NULL)
     {
+	//signal(SIGALRM, time_slice);
+	signal(SIGALRM, SIG_IGN);
+
+	set_time_slice(TIME_SLICE);
+
 	int return_value = __pthipth_add_main_tcb();
 	if (return_value != 0) return return_value;
 
@@ -95,7 +104,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;
     new_node->priority = new_node->init_priority = new_node->old_priority = priority;
-    new_node->last_selected = getcurrenttime_millisec();
+    new_node->last_selected = gettime_ms();
 
     futex_init(&new_node->sched_futex, 0);
 

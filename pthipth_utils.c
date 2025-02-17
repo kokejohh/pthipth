@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include "futex.h"
 #include "pthipth_prio.h"
@@ -26,51 +26,24 @@ void __pthipth_debug_futex_init()
     }
 }
 
-time_t getcurrenttime_millisec()
+time_t gettime_ms()
 {
     struct timespec ts;
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
-    time_t current_time = ts.tv_sec * 1000 + ts.tv_nsec / 1000;
-
-    return current_time;
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000;
 }
 
-void __pthipth_aging()
+// time_slice
+void set_time_slice(int ms)
 {
-//    pthipth_prio_display();
+    struct itimerval timer;
 
-    pthipth_private_t *tmp = pthipth_prio_head;
+    timer.it_value.tv_sec = ms / 1000;
+    timer.it_value.tv_usec = (ms % 1000) * 1000;
+    timer.it_interval.tv_sec = ms / 1000;
+    timer.it_interval.tv_usec = (ms % 1000) * 1000;
 
-    struct timespec ts;
-
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-
-    do
-    {
-	pthipth_private_t *inside_tmp = tmp;
-	do
-	{
-	    int new_priority = inside_tmp->priority;
-	    time_t current_time = getcurrenttime_millisec();
-	    time_t waiting_time = current_time - inside_tmp->last_selected;
-	    //printf("tid %d, inside_tmp->last_selected %ld\n", inside_tmp->tid, inside_tmp->last_selected);
-	    //printf("waiting_time %ld\n", waiting_time);
-	    int aging_factor = 1;
-	    new_priority += waiting_time / 1000 * aging_factor;
-	    if (new_priority < 1) new_priority = 1;
-	    inside_tmp->priority = new_priority;
-	    pthipth_private_t *next_tmp = inside_tmp->inside_next;
-	    if (inside_tmp->priority < inside_tmp->old_priority)
-	    {
-		inside_tmp->old_priority = inside_tmp->priority;
-		pthipth_prio_reinsert(inside_tmp);
-	    }
-
-	    inside_tmp = next_tmp;
-	} while (inside_tmp != tmp);
-	tmp = tmp->next;
-    } while (tmp != NULL);
+    setitimer(ITIMER_REAL, &timer, NULL);
 }
-

@@ -32,7 +32,7 @@ time_t gettime_ms()
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
-    return ts.tv_sec * 1000 + ts.tv_nsec / 1000;
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
 // time_slice

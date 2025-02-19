@@ -1,3 +1,4 @@
+#include "pthipth.h"
 #include "pthipth_prio.h"
 
 extern pthipth_private_t *pthipth_prio_head;
@@ -13,14 +14,14 @@ void pthipth_aging(int aging_factor)
     while (tmp)
     {
 	int priority = tmp->old_priority;
-	if (priority == LOWEST_PRIORITY) break;
+	if (priority == LOWEST_PRIORITY || priority == IDLE_PRIORITY) break;
 
 	time_t waiting_time = current_time - tmp->last_selected;
 	priority -= (waiting_time / 1000) * aging_factor;
 
 	if (priority < 1) priority = 1;
 
-	printf("koke %d , calling tid %d, current tid %d waiting_time %ld\n", priority, __pthipth_gettid(), tmp->tid, waiting_time);
+	//printf("koke %d , calling tid %d, current tid %d waiting_time %ld\n", priority, __pthipth_gettid(), tmp->tid, waiting_time);
 
 	if (tmp->next) head_on_prio = tmp;
 

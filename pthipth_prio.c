@@ -1,4 +1,5 @@
 #include "pthipth_prio.h"
+#include <stdio.h>
 
 // Bucket Queue
 pthipth_private_t *pthipth_prio_head;
@@ -129,7 +130,8 @@ pthipth_private_t *pthipth_prio_extract()
     pthipth_prio_head = tmp->inside_next;
 
     pthipth_prio_head->next = tmp->next;
-    pthipth_prio_head->next->prev = tmp->inside_next;
+    if (pthipth_prio_head->next)
+	pthipth_prio_head->next->prev = tmp->inside_next;
     pthipth_prio_head->prev = NULL;
     tmp->next = tmp->prev = NULL;
 

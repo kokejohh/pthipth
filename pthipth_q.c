@@ -27,18 +27,23 @@ void pthipth_q_add(pthipth_private_t *node)
 
 void pthipth_q_delete(pthipth_private_t *node)
 {
-    if (node == pthipth_q_head) pthipth_q_head = pthipth_q_head->next;
+    if (pthipth_q_head == NULL) return;
 
-    //pthipth_private_t *p = node->prev;
+    if (node == pthipth_q_head)
+    {
+	if (node->next == pthipth_q_head)
+	{
+	    pthipth_q_head = NULL; 
+	    return;
+	}
+	pthipth_q_head = pthipth_q_head->next;
+    }
 
     node->prev->next = node->next;
-
     node->next->prev = node->prev;
-
-//    free(node);
 }
 
-void pthipth_q_state_display()
+void pthipth_q_display()
 {
     if (pthipth_q_head == NULL) return;
 

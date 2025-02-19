@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
+#include "pthipth_q.h"
 #include "pthipth_prio.h"
 
 static void __pthipth_do_exit()
@@ -16,7 +17,12 @@ void pthipth_exit(void *return_val)
     self->return_value = return_val;
 
     if (self->blockedForJoin != NULL)
+    {
 	self->blockedForJoin->state = READY;
+
+	pthipth_q_delete(self->blockedForJoin);
+	pthipth_prio_insert(self->blockedForJoin);
+    }
 
     pthipth_prio_delete(self);
 

@@ -1,11 +1,11 @@
-//#include "pthipth_bst.h"
 #include "pthipth_avl.h"
+#include "pthipth_prio.h"
+#include "pthipth_q.h"
 
 int pthipth_join(pthipth_t target_thread, void **status)
 {
     pthipth_private_t *target, *self_ptr;
 
-    //target = pthipth_bst_search(target_thread.tid);
     target = pthipth_avl_search(target_thread.tid);
     self_ptr = __pthipth_selfptr();
 
@@ -20,6 +20,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
     target->blockedForJoin = self_ptr;
 
     self_ptr->state = BLOCKED;
+
+    pthipth_prio_delete(self_ptr);
+    pthipth_q_add(self_ptr);
 
     pthipth_yield();
 

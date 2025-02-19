@@ -10,30 +10,39 @@ void pthipth_sleep(time_t millisec)
 {
     pthipth_private_t *self = __pthipth_selfptr();
 
-    printf("sleep I love you %d\n", self->tid);
     self->state = SLEEPING;
     self->wake_time = gettime_ms() + millisec;
 
+    //printf("set sleep %ld + %ld = %ld\n", millisec, self->wake_time - millisec, self->wake_time);
+
     pthipth_prio_delete(self);
-    
     pthipth_q_add(self);
 
     pthipth_yield();
 }
 
-void check_sleepting()
+void check_sleeping()
 {
     pthipth_private_t *tmp = pthipth_q_head;
 
-    while (tmp != tmp->next)
+    if (tmp == NULL) return;
+
+    time_t current_time = gettime_ms();
+    do
     {
-	pthipth_private_t *tmp2 = tmp->next;
-	if (tmp->state == SLEEPING && gettime_ms() >= tmp->wake_time)
+	pthipth_private_t *next_tmp = tmp->next;
+	if (tmp->state == SLEEPING && current_time >= tmp->wake_time)
 	{
+	    //printf("tid %d tmp->state %d\n", tmp->tid, tmp->state);
+	    //printf("tmp->time %ld and %ld\n", tmp->wake_time, current_time);
 	    tmp->state = READY;
+	    tmp->last_selected = current_time;
+
 	    pthipth_q_delete(tmp);
 	    pthipth_prio_insert(tmp);
 	}
-	tmp = tmp2;
+	tmp = next_tmp;
+	if (pthipth_q_head == NULL) break;
     }
+    while (tmp != pthipth_q_head);
 }

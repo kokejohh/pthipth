@@ -13,7 +13,8 @@
 #include "pthipth_debug.h"
 
 #define HIGHEST_PRIORITY 0
-#define DEFAULT_PRIORITY 30
+#define DEFAULT_PRIORITY 29
+#define IDLE_PRIORITY 30
 #define LOWEST_PRIORITY 31
 
 #define TIME_SLICE 500

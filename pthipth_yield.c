@@ -10,8 +10,11 @@ extern time_t gettime_ms();
 
 extern void set_time_slice(int ms);
 
+extern void check_sleeping();
+
 int __pthipth_dispatcher(pthipth_private_t *node, int killed)
 {
+    check_sleeping();
     // set last_selected of calling thread
     node->last_selected = gettime_ms();
     // pre-selection aging

@@ -80,7 +80,6 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
 	    .priority = IDLE_PRIORITY
 	};
 	pthipth_create(&idle_u_tcb, &attr, pthipth_idle, NULL);
-	pthipth_prio_display();
     }
 
     pthipth_private_t *new_node = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));

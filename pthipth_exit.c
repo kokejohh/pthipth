@@ -1,8 +1,9 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-#include "pthipth_q.h"
-#include "pthipth_prio.h"
+#include "pthipth.h"
+
+extern void change_to_state(pthipth_private_t *node, int state);
 
 static void __pthipth_do_exit()
 {
@@ -13,20 +14,14 @@ void pthipth_exit(void *return_val)
 {
     pthipth_private_t *self = __pthipth_selfptr();
 
-    self->state = DEFUNCT;
+    if (self->blockedForJoin != NULL)
+	change_to_state(self->blockedForJoin, READY);
+
     self->return_value = return_val;
 
-    if (self->blockedForJoin != NULL)
-    {
-	self->blockedForJoin->state = READY;
+    change_to_state(self, DEFUNCT);
 
-	pthipth_q_delete(self->blockedForJoin);
-	pthipth_prio_insert(self->blockedForJoin);
-    }
-
-    pthipth_prio_delete(self);
-
-    __pthipth_dispatcher(self, 1);
+    __pthipth_dispatcher(self);
 
     __pthipth_do_exit();
 }

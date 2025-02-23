@@ -1,7 +1,5 @@
 #include "pthipth_prio.h"
 
-#define TIME_SLICE 500
-
 extern futex_t global_futex;
 
 extern void pthipth_aging(int aging_factor);
@@ -12,15 +10,19 @@ extern void set_time_slice(int ms);
 
 extern void check_sleeping();
 
-int __pthipth_dispatcher(pthipth_private_t *node, int killed)
+extern void change_to_state(pthipth_private_t *node, int state);
+
+int __pthipth_dispatcher(pthipth_private_t *node)
 {
     check_sleeping();
     // set last_selected of calling thread
     node->last_selected = gettime_ms();
-    // pre-selection aging
-    pthipth_aging(1);
+    // pre-selection aging (not use now)
+    //pthipth_aging(1);
 
     pthipth_private_t *tmp = pthipth_prio_extract();
+
+    change_to_state(tmp, RUNNING);
 
     if (tmp == node) return -1;
 
@@ -37,8 +39,10 @@ int pthipth_yield()
 
     futex_down(&global_futex);
     
+    if (self->state == RUNNING)
+	change_to_state(self, READY);
     // Only one thread. Nothing to do
-    if (__pthipth_dispatcher(self, 0) == -1)
+    if (__pthipth_dispatcher(self) == -1)
     {
 	futex_up(&global_futex);
 	return 0;

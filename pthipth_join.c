@@ -1,6 +1,6 @@
 #include "pthipth_avl.h"
-#include "pthipth_prio.h"
-#include "pthipth_q.h"
+
+extern void change_to_state(pthipth_private_t *node, int state);
 
 int pthipth_join(pthipth_t target_thread, void **status)
 {
@@ -19,10 +19,7 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     target->blockedForJoin = self_ptr;
 
-    self_ptr->state = BLOCKED;
-
-    pthipth_prio_delete(self_ptr);
-    pthipth_q_add(self_ptr);
+    change_to_state(self_ptr, BLOCKED);
 
     pthipth_yield();
 

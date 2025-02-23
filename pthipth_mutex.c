@@ -1,10 +1,14 @@
-// Don't forget cas
 #include <errno.h>
+#include <stdio.h>
 
-#include "pthipth_mutex.h"
-#include "pthipth.h"
-#include "pthipth_prio.h"
 #include "pthipth_avl.h"
+#include "pthipth_mutex.h"
+#include "pthipth_prio.h"
+#include "pthipth_queue.h"
+
+extern void change_to_state(pthipth_private_t *node, int state);
+
+extern pthipth_queue_t blocked_state;
 
 pthipth_t init_owner = {
     .tid = 0
@@ -21,20 +25,27 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
 int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 {
     // If have mutex owner
-    if (mutex->owner.tid != 0) 
+    pthipth_private_t *self = __pthipth_selfptr();
+    if (mutex->owner.tid == self->tid) return 0;
+    else if (mutex->owner.tid != 0)
     {
-	pthipth_private_t *self = __pthipth_selfptr();
 	pthipth_private_t *owner = pthipth_avl_search(mutex->owner.tid);
 
 	if (self->priority < owner->priority)
-	{
 	    owner->priority = self->priority;
+
+	if (owner->state == READY)
 	    pthipth_prio_reinsert(owner);
-	}
     }
+
+    self->current_mutex = mutex;
 
     while (__futex_down(&mutex->futx.count) != 0)
     {
+	self->current_mutex = mutex;
+
+	change_to_state(self, BLOCKED);
+
 	pthipth_yield();
     }
 
@@ -56,13 +67,29 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 	return -1;
     }
 
+    pthipth_private_t *tmp = blocked_state.head;
+    pthipth_private_t *selected = NULL;
+
+    while (tmp)
+    {
+	pthipth_private_t *next_tmp = tmp->next;
+	if (tmp->state == BLOCKED && tmp->current_mutex == mutex &&
+		(selected == NULL || tmp->priority < selected->priority))
+	    selected = tmp;
+	tmp = next_tmp;
+    }
+    if (selected) change_to_state(selected, READY);
+
     pthipth_private_t *owner = pthipth_avl_search(mutex->owner.tid);
 
     owner->priority = owner->old_priority;
+    owner->current_mutex = NULL;
+    change_to_state(owner, READY);
 
     mutex->owner = init_owner;
+
     // assign futex is 1 to futex up
     futex_init(&mutex->futx, 1);
+
     return 0;
 }
-

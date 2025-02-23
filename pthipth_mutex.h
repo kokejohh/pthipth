@@ -6,7 +6,6 @@
 typedef struct pthipth_mutex {
     futex_t futx;
     pthipth_t owner;
-    atomic_int status;
 } pthipth_mutex_t;
 
 int pthipth_mutex_init(pthipth_mutex_t *mutex);

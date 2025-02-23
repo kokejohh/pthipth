@@ -5,70 +5,79 @@
 #include "pthipth.h"
 #include "pthipth_debug.h"
 #include "pthipth_mutex.h"
+#include "pthipth_avl.h"
 
 pthipth_mutex_t hate;
-
-int num = 0;
-void *child_function(void *arg)
+void *high_priority_task(void *arg)
 {
-    pid_t tid = __pthipth_gettid();
-    printf("before tid %d\n", __pthipth_gettid());
-
-//    pthipth_mutex_unlock(&hate);
+    printf("high priority try lock\n");
     pthipth_mutex_lock(&hate);
-    pthipth_yield();
-    num++;
+    printf("high priority acquire resource\n");
     pthipth_mutex_unlock(&hate);
 
-    printf("num is %d\n", num);
-    //pthipth_yield();
-    printf("after tid %d\n", __pthipth_gettid());
-    //LOG_PRINTF("start child %d\n", __pthipth_gettid());
     return NULL;
 }
 
-void *child_function2(void *arg)
+void *low_priority_task(void *arg)
 {
-    pid_t tid = __pthipth_gettid();
-    printf("before tid %d\n", __pthipth_gettid());
+    printf("low priority lock\n");
+    pthipth_mutex_lock(&hate);
+
+    pthipth_t thread;
+    pthipth_attr_t attr = { .priority = 1};
+
+    pthipth_create(&thread, &attr, high_priority_task, NULL);
+
     pthipth_yield();
-    printf("middle tid %d\n", __pthipth_gettid());
-    pthipth_yield();
-    printf("after tid %d\n", __pthipth_gettid());
-    //LOG_PRINTF("start child %d\n", __pthipth_gettid());
+
+    //pthipth_join(thread, NULL);
+
+    printf("low priority unlock\n");
+    pthipth_mutex_unlock(&hate);
+
+    return NULL;
+}
+
+void *medium_priority_task(void *arg)
+{
+    printf("medium\n");
+    sleep(1);
     return NULL;
 }
 
 int main()
 {
     pthipth_mutex_init(&hate);
-    int n = 4;
-    pthipth_t threads[n];
+    int n = 2;
+    pthipth_t threads[n], thread1;
     pthipth_attr_t thread_attr[n];
 
     for (int i = 0; i < n; i++)
     {
 	pthipth_attr_t attr;
-//	attr.stackSize = 1024 * 8;
-	attr.priority = i % 2 + 1;
-	if (i == 3 ) {
-//	    sleep(1);
-	    attr.priority = 1;
+	attr.priority = 5;
+	if (i == 0)
+	{
+	    attr.priority = 4;
+	    pthipth_create(&threads[i], &attr, low_priority_task, NULL);
+	    sleep(1);
 	}
-	//thread_attr[i].stackSize = 1024 * 1024;
-	//thread_attr[i].priority = i % 2;// + 1;
-	pthipth_create(&threads[i], &attr, child_function, NULL);
-	//pthipth_join(threads[i], NULL);
-	//pthipth_create(&threads[i], &thread_attr[i], child_function, NULL);
+	else if (i == 1)
+	{
+	    attr.priority = 4;
+	    pthipth_create(&threads[i], &attr, medium_priority_task, NULL);
+	}
     }
 
-    pthipth_prio_display();
-//    pthipth_avl_display();
     for (int i = 0; i < n; i++)
     {
 	pthipth_join(threads[i], NULL);
     }
+
+    //pthipth_prio_display();
+
     pthipth_avl_display();
-    pthipth_prio_display();
+
     sleep(1);
 }
+

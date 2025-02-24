@@ -38,8 +38,6 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	    pthipth_prio_reinsert(owner);
     }
 
-    self->current_mutex = mutex;
-
     while (__futex_down(&mutex->futx.count) != 0)
     {
 	self->current_mutex = mutex;

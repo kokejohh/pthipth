@@ -1,10 +1,9 @@
 #ifndef PTHIPTH_COND_H
 #define PTHIPTH_COND_H
 
-#include "futex.h"
 #include "pthipth_mutex.h"
 
-typedef int pthipth_cond_t;
+typedef struct pthipth_cond {} pthipth_cond_t;
 
 void pthipth_cond_init(pthipth_cond_t *cond);
 

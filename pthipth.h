@@ -33,6 +33,7 @@ typedef struct pthipth {
 } pthipth_t;
 
 typedef struct pthipth_mutex pthipth_mutex_t;
+typedef struct pthipth_cond pthipth_cond_t;
 
 typedef struct pthipth_private {
     pid_t tid;
@@ -46,6 +47,7 @@ typedef struct pthipth_private {
     time_t wake_time;
     time_t last_selected;
     pthipth_mutex_t *current_mutex;
+    pthipth_cond_t *current_cond;
     // Bucket queue
     struct pthipth_private *prev, *next, *inside_prev, *inside_next;
     // AVL tree

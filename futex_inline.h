@@ -12,7 +12,7 @@ static inline int __futex_down(atomic_int *counter)
     {
 	value = atomic_load(counter);
 	if (value < 0) return value;
-    } while (!(atomic_compare_exchange_strong(counter, &value, value - 1)));
+    } while (!(atomic_compare_exchange_weak(counter, &value, value - 1)));
     return value - 1;
 }
 

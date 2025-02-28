@@ -59,7 +59,8 @@ int pthipth_mutex_trylock(pthipth_mutex_t *mutex)
 
 int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 {
-    if (mutex->owner.tid != __pthipth_gettid())
+    if (mutex->owner.tid == 0) return 0;
+    else if (mutex->owner.tid != __pthipth_gettid())
     {
 	printf("mutex unlock error: not owner unlock!\n");
 	return -1;
@@ -84,10 +85,7 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     owner->current_mutex = NULL;
     change_to_state(owner, READY);
 
-    mutex->owner = init_owner;
-
-    // assign futex is 1 to futex up
-    futex_init(&mutex->futx, 1);
+    pthipth_mutex_init(mutex);
 
     return 0;
 }

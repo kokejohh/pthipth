@@ -31,6 +31,12 @@ typedef struct pthipth {
     pid_t tid;
 } pthipth_t;
 
+typedef struct pthitph_task {
+    void *(*function)(void *);
+    void *arg;
+    unsigned priority;
+} pthipth_task_t;
+
 typedef struct pthipth_mutex pthipth_mutex_t;
 typedef struct pthipth_cond pthipth_cond_t;
 typedef struct pthipth_barrier pthipth_barrier_t;
@@ -38,8 +44,8 @@ typedef struct pthipth_barrier pthipth_barrier_t;
 typedef struct pthipth_private {
     pid_t tid;
     int state;
-    void *(*start_func) (void *);
-    void *args;
+    void *(*start_func)(void *);
+    void *arg;
     void *return_value;
     struct pthipth_private *blockedForJoin;
     futex_t sched_futex;
@@ -58,7 +64,7 @@ typedef struct pthipth_private {
 
 pthipth_t pthipth_self(void);
 
-int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(start_func)(void *), void *arg);
+int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 
 int pthipth_yield(void);
 

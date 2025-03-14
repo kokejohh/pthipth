@@ -34,7 +34,7 @@ static int __pthipth_add_main_tcb()
     }
 
     main_tcb->start_func = NULL;
-    main_tcb->args = NULL;
+    main_tcb->arg = NULL;
     main_tcb->state = READY;
     main_tcb->return_value = NULL;
     main_tcb->blockedForJoin = NULL;
@@ -60,7 +60,7 @@ void time_slice()
     pthipth_yield();
 }
 
-int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start_func)(void *), void *arg)
+int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task)
 {
     //int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGNAL | CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID |  CLONE_PARENT_SETTID );
 
@@ -78,10 +78,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
 	futex_init(&global_futex, 1);
 
 	pthipth_t idle_u_tcb;
-	pthipth_attr_t attr = {
-	    .priority = IDLE_PRIORITY
-	};
-	pthipth_create(&idle_u_tcb, &attr, pthipth_idle, NULL);
+	pthipth_task_t task_idle = { .function = pthipth_idle, .arg = NULL, .priority = IDLE_PRIORITY };
+	pthipth_create(&idle_u_tcb, NULL, &task_idle);
     }
 
     pthipth_private_t *new_node = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
@@ -92,14 +90,14 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
     if (attr == NULL)
     {
 	stackSize = SIGSTKSZ;
-	priority = DEFAULT_PRIORITY;
     }
     else
     {
 	//dont forget fix bug
 	stackSize = (attr->stackSize) ? attr->stackSize : SIGSTKSZ;
-	priority = (attr->priority) ? attr->priority : DEFAULT_PRIORITY;
     }
+
+    priority = (task->priority) ? task->priority : DEFAULT_PRIORITY;
 
     char *child_stack = mmap(NULL, stackSize, PROT_READ | PROT_WRITE,
 	    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
@@ -108,8 +106,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, void *(*start
 
     child_stack = child_stack + stackSize - sizeof(sigset_t);
 
-    new_node->start_func = start_func;
-    new_node->args = arg;
+    new_node->start_func = task->function;
+    new_node->arg = task->arg;
     new_node->state = READY;
     new_node->return_value = NULL;
     new_node->blockedForJoin = NULL;

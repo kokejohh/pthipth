@@ -9,7 +9,7 @@ int pthipth_wrapper(void *thread_tcb)
 
     futex_down(&new_tcb->sched_futex);
 
-    new_tcb->start_func(new_tcb->args);
+    new_tcb->start_func(new_tcb->arg);
 
     pthipth_exit(NULL);
     return 0;

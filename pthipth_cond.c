@@ -6,9 +6,10 @@ extern void change_to_state(pthipth_private_t *node, int state);
 
 extern pthipth_queue_t blocked_state;
 
-void pthipth_cond_init(pthipth_cond_t *cond)
+int pthipth_cond_init(pthipth_cond_t *cond)
 {
     (void)cond;
+    return 0;
 }
 
 int pthipth_cond_signal(pthipth_cond_t *cond)

@@ -5,7 +5,7 @@
 
 typedef struct pthipth_cond {} pthipth_cond_t;
 
-void pthipth_cond_init(pthipth_cond_t *cond);
+int pthipth_cond_init(pthipth_cond_t *cond);
 
 int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex);
 

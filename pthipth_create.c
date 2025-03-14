@@ -39,7 +39,7 @@ static int __pthipth_add_main_tcb()
     main_tcb->return_value = NULL;
     main_tcb->blockedForJoin = NULL;
     main_tcb->tid = __pthipth_gettid();
-    main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = LOWEST_PRIORITY;
+    main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = MAIN_PRIORITY;
     main_tcb->last_selected = gettime_ms();
     main_tcb->current_mutex = NULL;
     main_tcb->current_cond = NULL;
@@ -98,6 +98,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     }
 
     priority = (task->priority) ? task->priority : DEFAULT_PRIORITY;
+    if (task->priority < HIGHEST_PRIORITY) priority = HIGHEST_PRIORITY;
+    else if (task->priority > LOWEST_PRIORITY) priority = LOWEST_PRIORITY;
 
     char *child_stack = mmap(NULL, stackSize, PROT_READ | PROT_WRITE,
 	    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);

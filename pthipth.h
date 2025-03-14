@@ -11,10 +11,11 @@
 #include "futex.h"
 #include "pthipth_debug.h"
 
-#define HIGHEST_PRIORITY 0
-#define DEFAULT_PRIORITY 29
+#define HIGHEST_PRIORITY 1
+#define DEFAULT_PRIORITY 28
+#define LOWEST_PRIORITY 29
 #define IDLE_PRIORITY 30
-#define LOWEST_PRIORITY 31
+#define MAIN_PRIORITY 31
 
 #define TIME_SLICE 500
 

@@ -14,7 +14,7 @@ void pthipth_aging(int aging_factor)
     while (tmp)
     {
 	int priority = tmp->old_priority;
-	if (priority == LOWEST_PRIORITY || priority == IDLE_PRIORITY) break;
+	if (priority == MAIN_PRIORITY || priority == IDLE_PRIORITY) break;
 
 	time_t waiting_time = current_time - tmp->last_selected;
 	priority -= (waiting_time / 1000) * aging_factor;

@@ -2,6 +2,7 @@
 
 #include "pthipth.h"
 #include "pthipth_pool.h"
+#include "pthipth_prio.h"
 
 static int pthipth_pool_free(pthipth_pool_t *pool);
 static void *pthipth_thread(void *arg);
@@ -39,7 +40,7 @@ pthipth_pool_t *pthipth_pool_create(pthipth_attr_t *attr, int thread_count, int 
 
     for (int i = 0; i < thread_count; i++)
     {
-	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, (void *)pool, DEFAULT_PRIORITY}) != 0)
+	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, (void *)pool, HIGHEST_PRIORITY}) != 0)
 	{
 	    // hi don't forget focus this
 	    pthipth_pool_destroy(pool, 0);
@@ -48,17 +49,6 @@ pthipth_pool_t *pthipth_pool_create(pthipth_attr_t *attr, int thread_count, int 
 	pool->thread_count++;
 	pool->started++;
     }
-    /*
-    for (int i = 0; i < thread_count; i++)
-    {
-	printf("northanear\n");
-	if (pthipth_join(pool->threads[i], NULL) != 0)
-	{
-	    return NULL;
-	}
-	printf("northanear 2\n");
-    }
-    */
 
     return pool;
 
@@ -188,6 +178,7 @@ static void *pthipth_thread(void *arg)
 {
     pthipth_pool_t *pool = (pthipth_pool_t *)arg;
     pthipth_task_t task;
+    pthipth_private_t *thread = __pthipth_selfptr();
 
     while (1)
     {
@@ -206,12 +197,15 @@ static void *pthipth_thread(void *arg)
 	pool->head = (pool->head + 1) % pool->queue_size;
 	pool->count -= 1;
 
-	pthipth_mutex_unlock(&pool->lock);
+	thread->priority = thread->init_priority = thread->old_priority = task.priority;
 
-	(*(task.function))(task.arg);
+	pthipth_prio_reinsert(thread);
+
+	pthipth_mutex_unlock(&pool->lock);
 
 	pthipth_yield();
 
+	(*(task.function))(task.arg);
     }
 
     pool->started--;

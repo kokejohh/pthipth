@@ -99,7 +99,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 
     priority = (task->priority) ? task->priority : DEFAULT_PRIORITY;
     if (task->priority < HIGHEST_PRIORITY) priority = HIGHEST_PRIORITY;
-    else if (task->priority > LOWEST_PRIORITY) priority = LOWEST_PRIORITY;
+    else if (task->priority > LOWEST_PRIORITY && task->priority != IDLE_PRIORITY) priority = LOWEST_PRIORITY;
 
     char *child_stack = mmap(NULL, stackSize, PROT_READ | PROT_WRITE,
 	    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);

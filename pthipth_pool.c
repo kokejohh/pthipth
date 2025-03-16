@@ -153,22 +153,17 @@ int pthipth_pool_destroy(pthipth_pool_t *pool, int flags)
 	pthipth_pool_free(pool);
     }
 
-    return 0;
+    return err;
 }
 
 static int pthipth_pool_free(pthipth_pool_t *pool)
 {
-    if (pool == NULL || pool->started == 0)
-    {
-	return -1;
-    }
+    if (pool == NULL || pool->started > 0) return -1;
 
     if (pool->threads)
     {
 	free(pool->threads);
 	free(pool->queue);
-
-	pthipth_mutex_lock(&pool->lock);
     }
     free(pool);
     return 0;

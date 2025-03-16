@@ -193,7 +193,10 @@ static void *pthipth_thread(void *arg)
 
 	task.function = pool->queue[pool->head].function;
 	task.arg = pool->queue[pool->head].arg;
-	task.priority = pool->queue[pool->head].priority;
+	task.priority = pool->queue[pool->head].priority ? pool->queue[pool->head].priority : DEFAULT_PRIORITY;
+	if (pool->queue[pool->head].priority < HIGHEST_PRIORITY) task.priority = HIGHEST_PRIORITY;
+	else if (task.priority > LOWEST_PRIORITY && task.priority != IDLE_PRIORITY) task.priority = LOWEST_PRIORITY;
+
 	pool->head = (pool->head + 1) % pool->queue_size;
 	pool->count -= 1;
 

@@ -83,7 +83,6 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 
     owner->priority = owner->old_priority;
     owner->current_mutex = NULL;
-    change_to_state(owner, READY);
 
     pthipth_mutex_init(mutex);
 

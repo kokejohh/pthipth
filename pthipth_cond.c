@@ -28,26 +28,22 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
     }
     if (selected) change_to_state(selected, READY);
 
-    return 1;
+    return 0;
 }
 
 int pthipth_cond_broadcast(pthipth_cond_t *cond)
 {
     pthipth_private_t *tmp = blocked_state.head;
-    int count = 0;
     while (tmp)
     {
 	pthipth_private_t *next_tmp = tmp->next;
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond)
-	{
-	    count++;
 	    change_to_state(tmp, READY);
-	}
 	tmp = next_tmp;
     }
 
-    return count;
+    return 0;
 }
 
 int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)

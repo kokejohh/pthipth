@@ -4,6 +4,12 @@
 #include "pthipth_mutex.h"
 #include "pthipth_cond.h"
 
+#define MIN_THREAD_COUNT 0
+#define MAX_THREAD_COUNT 9999
+#define MIN_QUEUE_SIZE 0
+#define MAX_QUEUE_SIZE 9999
+#define SHUTDOWN 1
+
 typedef struct pthipth_pool {
     pthipth_mutex_t lock;
     pthipth_cond_t notify;
@@ -18,10 +24,10 @@ typedef struct pthipth_pool {
     int started;
 } pthipth_pool_t;
 
-pthipth_pool_t *pthipth_pool_create(pthipth_attr_t *attr, int thread_count, int queue_size);
+int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size);
 
 int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task);
 
-int pthipth_pool_destroy(pthipth_pool_t *pool, int flags);
+int pthipth_pool_destroy(pthipth_pool_t *pool);
 
 #endif

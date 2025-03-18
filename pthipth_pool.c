@@ -1,24 +1,19 @@
 #include <stdlib.h>
-
-#include "pthipth.h"
+#include "pthipth_cond.h"
+#include "pthipth_mutex.h"
 #include "pthipth_pool.h"
 #include "pthipth_prio.h"
 
 static int pthipth_pool_free(pthipth_pool_t *pool);
 static void *pthipth_thread(void *arg);
 
-pthipth_pool_t *pthipth_pool_create(pthipth_attr_t *attr, int thread_count, int queue_size)
+int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size)
 {
-    pthipth_pool_t *pool;
-
-    if (thread_count <= 0 || thread_count > 100 || queue_size <= 0 || queue_size > 100)
+    if (thread_count <= MIN_THREAD_COUNT || thread_count > MAX_THREAD_COUNT ||
+	    queue_size <= MIN_QUEUE_SIZE || queue_size > MAX_QUEUE_SIZE ||
+	    pool == NULL)
     {
-	return NULL;
-    }
-
-    if ((pool = (pthipth_pool_t *)malloc(sizeof(pthipth_pool_t))) == NULL)
-    {
-	goto err;
+	return -1;
     }
 
     // Initialize
@@ -35,156 +30,102 @@ pthipth_pool_t *pthipth_pool_create(pthipth_attr_t *attr, int thread_count, int 
     if ((pthipth_mutex_init(&pool->lock) != 0) || pthipth_cond_init(&pool->notify) != 0 ||
 	    (pool->threads == NULL || pool->queue == NULL))
     {
-	goto err;
+	pthipth_pool_free(pool);
+	return -1;
     }
 
     for (int i = 0; i < thread_count; i++)
     {
 	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, (void *)pool, HIGHEST_PRIORITY}) != 0)
 	{
-	    // hi don't forget focus this
-	    pthipth_pool_destroy(pool, 0);
-	    return NULL;
+	    pthipth_pool_destroy(pool);
+	    return -1;
 	}
 	pool->thread_count++;
 	pool->started++;
     }
 
-    return pool;
-
-err:
-    if (pool)
-    {
-	pthipth_pool_free(pool);
-    }
-    return NULL;
+    return 0;
 }
 
 int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task) 
 {
-    int err = 0;
-    int next;
-
-    if (pool == NULL || task == NULL || task->function == NULL)
+    if (pool == NULL || task == NULL || task->function == NULL ||
+	    pool->threads == NULL || pool->queue == NULL)
 	return -1;
 
-    if (pthipth_mutex_lock(&pool->lock) != 0)
-    {
-	return -1;
-    }
+    pthipth_mutex_lock(&pool->lock);
 
-    next = (pool->tail + 1) % pool->queue_size;
+    int next = (pool->tail + 1) % pool->queue_size;
 
-    do
-    {
-	if (pool->count == pool->queue_size)
-	{
-	    err = -1;
-	    break;
-	}
-	
-	if (pool->shutdown)
-	{
-	    err = -1;
-	    break;
-	}
+    if (pool->count == pool->queue_size) return -1;
 
-	pool->queue[pool->tail].function = task->function;
-	pool->queue[pool->tail].arg = task->arg;
-	pool->queue[pool->tail].priority = task->priority;
-	pool->tail = next;
-	pool->count += 1;
+    pool->queue[pool->tail].function = task->function;
+    pool->queue[pool->tail].arg = task->arg;
+    pool->queue[pool->tail].priority = task->priority;
+    pool->tail = next;
+    pool->count += 1;
 
-	if (pthipth_cond_signal(&pool->notify) != 0)
-	{
-	    err = -1;
-	    break;
-	}
-    } while (0);
+    pthipth_cond_signal(&pool->notify);
 
-    if (pthipth_mutex_unlock(&pool->lock) != 0)
-    {
-	err = - 1;
-    }
-    return err;
+    pthipth_mutex_unlock(&pool->lock);
+
+    return 0;
 }
 
-int pthipth_pool_destroy(pthipth_pool_t *pool, int flags)
+int pthipth_pool_destroy(pthipth_pool_t *pool)
 {
-    int i, err = 0;
+    if (pool == NULL || pool->threads == NULL || pool->queue == NULL) return -1;
 
-    if (pool == NULL)
+    pthipth_mutex_lock(&pool->lock);
+
+    if (pool->shutdown) 
     {
+	pthipth_mutex_unlock(&pool->lock);
 	return -1;
     }
 
-    if (pthipth_mutex_lock(&pool->lock) != 0)
-    {
-	return -1;
-    }
+    pool->shutdown = SHUTDOWN;
 
-    do
-    {
-	if (pool->shutdown)
-	{
-	    err = -1;
-	    break;
-	}
+    pthipth_cond_broadcast(&pool->notify);
 
-	pool->shutdown = (flags & 2) ? -1 : -2;
+    pthipth_mutex_unlock(&pool->lock);
 
-	if (pthipth_cond_broadcast(&pool->notify) != 0 || pthipth_mutex_unlock(&pool->lock) != 0)
-	{
-	    err = -1;
-	    break;
-	}
+    for (int i = 0; i < pool->thread_count; i++)
+	pthipth_join(pool->threads[i], NULL);
 
-	for (int i = 0; i < pool->thread_count; i++)
-	{
-	    if (pthipth_join(pool->threads[i], NULL) != 0)
-	    {
-		err = -1;
-	    }
-	}
-    } while (0);
+    pthipth_pool_free(pool);
 
-    if (!err)
-    {
-	pthipth_pool_free(pool);
-    }
-
-    return err;
+    return 0; 
 }
 
 static int pthipth_pool_free(pthipth_pool_t *pool)
 {
     if (pool == NULL || pool->started > 0) return -1;
 
-    if (pool->threads)
-    {
-	free(pool->threads);
-	free(pool->queue);
-    }
-    free(pool);
+    free(pool->threads);
+    free(pool->queue);
+
+    pool->threads = NULL;
+    pool->queue = NULL;
+
     return 0;
 }
 
 static void *pthipth_thread(void *arg)
 {
-    pthipth_pool_t *pool = (pthipth_pool_t *)arg;
     pthipth_task_t task;
+    pthipth_pool_t *pool = (pthipth_pool_t *)arg;
     pthipth_private_t *thread = __pthipth_selfptr();
 
     while (1)
     {
 	pthipth_mutex_lock(&pool->lock);
 
-	while ((pool->count == 0) && (!pool->shutdown))
-	{
+	while (!pool->shutdown && pool->count == 0)
 	    pthipth_cond_wait(&(pool->notify), &(pool->lock));
-	}
 
-	if (pool->shutdown == -1 || (pool->shutdown == -2 && pool->count == 0)) break;
+	if (pool->shutdown && pool->count == 0) break;
 
 	task.function = pool->queue[pool->head].function;
 	task.arg = pool->queue[pool->head].arg;

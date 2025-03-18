@@ -16,6 +16,8 @@ pthipth_t init_owner = {
 
 int pthipth_mutex_init(pthipth_mutex_t *mutex)
 {
+    if (mutex == NULL) return -1;
+
     futex_init(&mutex->futx, 1);
 
     mutex->owner = init_owner;
@@ -24,6 +26,7 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
     
 int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 {
+    if (mutex == NULL) return -1;
     // If have mutex owner
     pthipth_private_t *self = __pthipth_selfptr();
     if (mutex->owner.tid == self->tid) return 0;
@@ -53,13 +56,15 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 
 int pthipth_mutex_trylock(pthipth_mutex_t *mutex)
 {
-    if (mutex->owner.tid) return EBUSY;
+    if (mutex == NULL) return -1;
+    else if (mutex->owner.tid) return -EBUSY;
     return pthipth_mutex_lock(mutex);
 }
 
 int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 {
-    if (mutex->owner.tid == 0) return 0;
+    if (mutex == NULL) return -1;
+    else if (mutex->owner.tid == 0) return 0;
     else if (mutex->owner.tid != __pthipth_gettid())
     {
 	printf("mutex unlock error: not owner unlock!\n");

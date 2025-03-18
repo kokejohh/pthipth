@@ -8,12 +8,16 @@ extern pthipth_queue_t blocked_state;
 
 int pthipth_cond_init(pthipth_cond_t *cond)
 {
+    if (cond == NULL) return -1;
+
     (void)cond;
     return 0;
 }
 
 int pthipth_cond_signal(pthipth_cond_t *cond)
 {
+    if (cond == NULL) return -1;
+
     pthipth_private_t *tmp = blocked_state.head;
     pthipth_private_t *selected = NULL;
 
@@ -33,6 +37,8 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 
 int pthipth_cond_broadcast(pthipth_cond_t *cond)
 {
+    if (cond == NULL) return -1;
+
     pthipth_private_t *tmp = blocked_state.head;
     while (tmp)
     {
@@ -48,6 +54,8 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 
 int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 {
+    if (cond == NULL || mutex == NULL) return -1;
+
     pthipth_private_t *self = __pthipth_selfptr();
 
     pthipth_mutex_unlock(mutex);

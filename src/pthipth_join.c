@@ -1,6 +1,6 @@
 #include "pthipth_avl.h"
 
-extern void change_to_state(pthipth_private_t *node, int state);
+extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
 
 int pthipth_join(pthipth_t target_thread, void **status)
 {

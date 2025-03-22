@@ -1,12 +1,13 @@
 #include <errno.h>
 #include <stdio.h>
 
+#include "pthipth.h"
 #include "pthipth_avl.h"
 #include "pthipth_mutex.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
 
-extern void change_to_state(pthipth_private_t *node, int state);
+extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
 
 extern pthipth_queue_t blocked_state;
 

@@ -3,7 +3,7 @@
 
 #include "pthipth.h"
 
-extern void change_to_state(pthipth_private_t *node, int state);
+extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
 
 static void __pthipth_do_exit()
 {

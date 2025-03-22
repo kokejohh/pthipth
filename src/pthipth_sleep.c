@@ -5,7 +5,7 @@
 
 extern time_t gettime_ms();
 
-extern void change_to_state(pthipth_private_t *node, int state);
+extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
 
 extern pthipth_queue_t sleeping_state;
 

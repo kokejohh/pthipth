@@ -51,7 +51,7 @@ void set_time_slice(int ms)
     setitimer(ITIMER_REAL, &timer, NULL);
 }
 
-void change_to_state(pthipth_private_t *node, int to_state)
+void change_to_state(pthipth_private_t *node, enum pthipth_state to_state)
 {
     if (node->state == to_state) return;
 
@@ -63,6 +63,7 @@ void change_to_state(pthipth_private_t *node, int to_state)
 	case SLEEPING:
 	    pthipth_queue_delete(&sleeping_state, node);
 	    break;
+	default: break;
     }
 
     switch (to_state)

@@ -44,7 +44,7 @@ typedef struct pthipth_barrier pthipth_barrier_t;
 
 typedef struct pthipth_private {
     pid_t tid;
-    int state;
+    enum pthipth_state state;
     void *(*start_func)(void *);
     void *arg;
     void *return_value;
@@ -62,6 +62,7 @@ typedef struct pthipth_private {
     struct pthipth_private *parent, *left, *right;
     int height;
 } pthipth_private_t;
+
 
 pthipth_t pthipth_self(void);
 

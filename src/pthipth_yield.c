@@ -10,7 +10,7 @@ extern void set_time_slice(int ms);
 
 extern void check_sleeping();
 
-extern void change_to_state(pthipth_private_t *node, int state);
+extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
 
 int __pthipth_dispatcher(pthipth_private_t *node)
 {

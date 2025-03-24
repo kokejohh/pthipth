@@ -128,7 +128,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 	return (-errno);
     }
 
-    new_thread_ID->tid = new_node->tid = tid;
+    *new_thread_ID = new_node->tid = tid;
 
     pthipth_avl_insert(new_node);
 

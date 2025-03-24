@@ -2,11 +2,7 @@
 
 pthipth_t pthipth_self()
 {
-    pthipth_t self_tcb;
-
-    self_tcb.tid = __pthipth_gettid();
-
-    return self_tcb;
+    return __pthipth_gettid();
 }
 
 pthipth_private_t *__pthipth_selfptr()

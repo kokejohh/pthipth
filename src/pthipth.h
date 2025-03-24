@@ -6,6 +6,7 @@
 #define PTHIPTH_H 
 
 #include <stdio.h>
+#include <stdint.h>
 #include <time.h>
 
 #include "futex.h"
@@ -28,9 +29,12 @@ typedef struct pthipth_attr {
     unsigned priority;
 } pthipth_attr_t;
 
+/*
 typedef struct pthipth {
     pid_t tid;
 } pthipth_t;
+*/
+typedef uint64_t pthipth_t;
 
 typedef struct pthitph_task {
     void *(*function)(void *);

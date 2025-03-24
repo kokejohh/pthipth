@@ -5,7 +5,7 @@
 
 typedef struct pthipth_mutex {
     futex_t futx;
-    pthipth_t owner;
+    pthipth_t owner_tid;
 } pthipth_mutex_t;
 
 int pthipth_mutex_init(pthipth_mutex_t *mutex);

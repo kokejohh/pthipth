@@ -1,7 +1,7 @@
 #ifndef PTHIPTH_COND_H
 #define PTHIPTH_COND_H
 
-#include "pthipth_mutex.h"
+#include "pthipth_types.h"
 
 typedef struct pthipth_cond {} pthipth_cond_t;
 

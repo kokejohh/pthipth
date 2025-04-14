@@ -5,12 +5,7 @@
 #ifndef PTHIPTH_H
 #define PTHIPTH_H 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
-
-#include "futex.h"
-#include "pthipth_debug.h"
+#include "pthipth_types.h"
 
 #define HIGHEST_PRIORITY 1
 #define DEFAULT_PRIORITY 28
@@ -20,70 +15,52 @@
 
 #define TIME_SLICE 500
 
-enum pthipth_state {
-    RUNNING, READY, BLOCKED, SLEEPING, DEFUNCT
-};
-
-typedef struct pthipth_attr {
-    unsigned long stackSize;
-    unsigned priority;
-} pthipth_attr_t;
-
-/*
-typedef struct pthipth {
-    pid_t tid;
-} pthipth_t;
-*/
-typedef uint64_t pthipth_t;
-
-typedef struct pthitph_task {
-    void *(*function)(void *);
-    void *arg;
-    unsigned priority;
-} pthipth_task_t;
-
-typedef struct pthipth_mutex pthipth_mutex_t;
-typedef struct pthipth_cond pthipth_cond_t;
-typedef struct pthipth_barrier pthipth_barrier_t;
-
-typedef struct pthipth_private {
-    pid_t tid;
-    enum pthipth_state state;
-    void *(*start_func)(void *);
-    void *arg;
-    void *return_value;
-    struct pthipth_private *blockedForJoin;
-    futex_t sched_futex;
-    int priority, init_priority, old_priority;
-    time_t wake_time;
-    time_t last_selected;
-    pthipth_mutex_t *current_mutex;
-    pthipth_cond_t *current_cond;
-    pthipth_barrier_t *current_barrier;
-    // Bucket queue
-    struct pthipth_private *prev, *next, *inside_prev, *inside_next;
-    // AVL tree
-    struct pthipth_private *parent, *left, *right;
-    int height;
-} pthipth_private_t;
-
-
-pthipth_t pthipth_self(void);
-
+// create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 
-int pthipth_yield(void);
+// yield
+void pthipth_yield(void);
 
+// yield quota
+void pthipth_yieldq(uint64_t ms);
+
+// join
 int pthipth_join(pthipth_t target_thread, void **status);
 
+// exit
 void pthipth_exit(void *retval);
 
-void pthipth_sleep(time_t millisec);
+// sleep
+void pthipth_sleep(uint64_t millisec);
+
+// self
+pthipth_t pthipth_self(void);
+
+#include "pthipth_mutex.h"
+#include "pthipth_cond.h"
+#include "pthipth_barrier.h"
+#include "pthipth_pool.h"
 
 pid_t __pthipth_gettid();
 
+uint64_t __pthipth_gettime_ms();
+
+void __pthipth_set_thread_time_quota(int ms);
+
+void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state);
+
 pthipth_private_t *__pthipth_selfptr();
 
+void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state);
+
 int __pthipth_dispatcher(pthipth_private_t *);
+
+void __pthipth_check_sleeping();
+
+void __pthipth_aging(int aging_factor);
+
+void *__pthipth_idle(void *phony);
+
+int __pthipth_wrapper(void *arg);
 
 #endif

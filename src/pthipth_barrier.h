@@ -1,7 +1,7 @@
 #ifndef PTHIPTH_BARRIER_H
 #define PTHIPTH_BARRIER_H
 
-#include <stdatomic.h>
+#include "pthipth_types.h"
 
 #define PTHIPTH_BARRIER_SERIAL_THREAD 1
 

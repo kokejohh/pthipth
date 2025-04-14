@@ -1,7 +1,7 @@
 #ifndef PTHIPTH_MUTEX_H
 #define PTHIPTH_MUTEX_H
 
-#include "pthipth.h"
+#include "pthipth_types.h"
 
 typedef struct pthipth_mutex {
     futex_t futx;

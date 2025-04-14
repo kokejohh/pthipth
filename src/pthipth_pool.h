@@ -1,12 +1,13 @@
 #ifndef PTHIPTH_POOL_H
 #define PTHIPTH_POOL_H
 
+#include "pthipth_types.h"
 #include "pthipth_mutex.h"
 #include "pthipth_cond.h"
 
-#define MIN_THREAD_COUNT 0
+#define MIN_THREAD_COUNT 1
 #define MAX_THREAD_COUNT 9999
-#define MIN_QUEUE_SIZE 0
+#define MIN_QUEUE_SIZE 1
 #define MAX_QUEUE_SIZE 9999
 #define SHUTDOWN 1
 
@@ -21,6 +22,7 @@ typedef struct pthipth_pool {
     int tail;
     int count;
     int shutdown;
+    int task_in_progess;
     int started;
 } pthipth_pool_t;
 

@@ -1,35 +1,43 @@
+#include <stdatomic.h>
 #include <errno.h>
-#include <sys/syscall.h>
-#include <linux/futex.h>
+#include <time.h>
+
 #include <unistd.h>
+
+#include <linux/futex.h>
+#include <syscall.h>
 
 #include "futex.h"
 
-// futex system call
+// sys_futex: wrapper function for the futex syscall
+// returns:
+// 0 - success
+// -1 - error
 int sys_futex(atomic_int *uaddr, int operation, int value, const struct timespec *timeout)
 {
     return syscall(SYS_futex, uaddr, operation, value, timeout, NULL);
 }
 
-// return -1 on fail, 0 on wakeup, 1 on didn't sleep
+// __futex_down_slow: calls futex(FUTEX_WAIT) to block the thread
+// if the futex->count is equal to the value
+// returns:
+// 0 - woken up,
+// 1 - value changed before sleeping (EWOULDBLOCK)
+// -1 - error (interrupt, etc)
 int __futex_down_slow(futex_t *futx, int value, struct timespec *relative)
 {
-    if(sys_futex(&futx->count, FUTEX_WAIT, value, relative) == 0) 
-    {
-	return 0;
-    }
+    if(sys_futex(&futx->count, FUTEX_WAIT, value, relative) == 0) return 0;
 
     if (errno == EWOULDBLOCK) return 1;
     return -1;
 }
 
+// __futex_up_slow: calls futex(FUTEX_WAKE) for wake up the thread
+// returns:
+// 0 - successfully woke up the thread
+// -1 - error
 int __futex_up_slow(futex_t *futx)
 {
     atomic_store(&futx->count, 1);
     return sys_futex(&futx->count, FUTEX_WAKE, 1, NULL);
-}
-
-void futex_init(futex_t *futx, int value)
-{
-    atomic_store(&futx->count, value);
 }

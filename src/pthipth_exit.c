@@ -1,27 +1,34 @@
 #include <unistd.h>
-#include <sys/syscall.h>
+#include <syscall.h>
 
 #include "pthipth.h"
 
-extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
+extern futex_t global_futex;
 
-static void __pthipth_do_exit()
+static void __pthipth_exit()
 {
     syscall(SYS_exit, 0);
 }
 
+// pthipth_exit:
 void pthipth_exit(void *return_val)
 {
+    // sync 
+    futex_down(&global_futex);
+
     pthipth_private_t *self = __pthipth_selfptr();
 
+    // change state of thread join to ready
     if (self->blockedForJoin != NULL)
-	change_to_state(self->blockedForJoin, READY);
+	__pthipth_change_to_state(self->blockedForJoin, READY);
 
     self->return_value = return_val;
 
-    change_to_state(self, DEFUNCT);
+    __pthipth_change_to_state(self, DEFUNCT);
 
     __pthipth_dispatcher(self);
 
-    __pthipth_do_exit();
+    futex_up(&global_futex);
+
+    __pthipth_exit();
 }

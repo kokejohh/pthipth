@@ -1,7 +1,10 @@
+// binary search tree
+// alert: not use anymore
+#include <stdio.h>
+
 #include "pthipth_bst.h"
 
 pthipth_private_t *pthipth_bst_root;
-
 
 void pthipth_bst_init(pthipth_private_t *node)
 {
@@ -11,72 +14,66 @@ void pthipth_bst_init(pthipth_private_t *node)
 
 void pthipth_bst_insert(pthipth_private_t *node)
 {
-    if (pthipth_bst_root == NULL)
-    {
-	pthipth_bst_init(node);
-	return;
-    }
+    if (pthipth_bst_root == NULL) return pthipth_bst_init(node);
 
-    pthipth_private_t *tmp = pthipth_bst_root;
+    // clear leafs
+    node->left = node->right = NULL;
+
+    pthipth_private_t *cur = pthipth_bst_root;
+
     while (1)
     {
-	if (node->tid < tmp->tid)
+	// left node
+	if (node->tid < cur->tid)
 	{
-	    if (tmp->left == NULL)
+	    if (cur->left == NULL)
 	    {
-		tmp->left = node;
-		break;
+		cur->left = node;
+		return;
 	    }
-	    else
-	    {
-		tmp = tmp->left;
-	    }
+	    cur = cur->left;
 	}
-	else if (node->tid > tmp->tid)
+	// right node
+	else if (node->tid > cur->tid)
 	{
-	    if (tmp->right == NULL)
+	    if (cur->right == NULL)
 	    {
-		tmp->right = node;
-		break;
+		cur->right = node;
+		return;
 	    }
-	    else
-	    {
-		tmp = tmp->right;
-	    }
+	    cur = cur->right;
 	}
-	else
-	{
-	    break;
-	}
+	else return;
     }
 }
 
-pthipth_private_t *pthipth_bst_search(unsigned long tid)
+pthipth_private_t *pthipth_bst_search(pid_t tid)
 {
     if (pthipth_bst_root == NULL) return NULL;
 
-    pthipth_private_t *tmp = pthipth_bst_root;
+    pthipth_private_t *cur = pthipth_bst_root;
 
-    while (1)
+    while (cur)
     {
-	if (tmp->tid == tid) return tmp;
-
-	if (tmp->tid > tid) tmp = tmp->left;
-	else if (tmp->tid < tid) tmp = tmp->right;
-	if (tmp == NULL) break;
+	if (tid == cur->tid) return cur;
+	else if (tid < cur->tid) cur = cur->left;
+	else if (tid > cur->tid) cur = cur->right;
     }
     return NULL;
 }
+
 void traversal(pthipth_private_t *node)
 {
     if (node == NULL) return;
+
     traversal(node->left);
-    printf("tid(%d) prio: %d\n", node->tid, node->priority);
     traversal(node->right);
+    printf("tid(%d) prio: %d\n", node->tid, node->priority);
 }
 
 void pthipth_bst_display()
 {
-    printf("display binary search\n");
+    printf("display binary search tree\n");
     traversal(pthipth_bst_root);
+    printf("end display binary search tree\n");
 }

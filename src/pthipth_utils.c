@@ -1,14 +1,11 @@
+#include <stdint.h>
 #include <unistd.h>
-#include <sys/syscall.h>
+#include <syscall.h>
 #include <sys/time.h>
 
-#include "futex.h"
+#include "pthipth_types.h"
 #include "pthipth_queue.h"
 #include "pthipth_prio.h"
-
-futex_t debug_futex;
-char msg[1000];
-static int debug_futex_init_already = 0;
 
 extern pthipth_private_t *pthipth_prio_head;
 
@@ -20,16 +17,7 @@ pid_t __pthipth_gettid()
     return (pid_t)syscall(SYS_gettid);
 }
 
-void __pthipth_debug_futex_init()
-{
-    if (!debug_futex_init_already)
-    {
-	futex_init(&debug_futex, 1);
-	debug_futex_init_already = 0;
-    }
-}
-
-time_t gettime_ms()
+uint64_t __pthipth_gettime_ms()
 {
     struct timespec ts;
 
@@ -38,9 +26,15 @@ time_t gettime_ms()
     return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
-// time_slice
-void set_time_slice(int ms)
+// set time quota per thread
+void __pthipth_set_thread_time_quota(int ms)
 {
+    if (ms <= 0)
+    {
+	struct itimerval timer = {0};
+	setitimer(ITIMER_REAL, &timer, NULL);
+	return;
+    }
     struct itimerval timer;
 
     timer.it_value.tv_sec = ms / 1000;
@@ -51,7 +45,8 @@ void set_time_slice(int ms)
     setitimer(ITIMER_REAL, &timer, NULL);
 }
 
-void change_to_state(pthipth_private_t *node, enum pthipth_state to_state)
+// safe change state
+void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state)
 {
     if (node->state == to_state) return;
 

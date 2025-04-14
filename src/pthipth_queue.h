@@ -1,7 +1,9 @@
+// doubly linked list
+
 #ifndef PTHIPTH_QUEUE_H
 #define PTHIPTH_QUEUE_H
 
-#include "pthipth.h"
+#include "pthipth_types.h"
 
 typedef struct pthipth_queue
 {

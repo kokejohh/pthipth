@@ -1,13 +1,16 @@
+#include "pthipth.h"
 #include "pthipth_avl.h"
 
-extern void change_to_state(pthipth_private_t *node, enum pthipth_state state);
-
+// pthipth_join:
+// returns:
+// 0 - success
+// -1 - error (already join)
 int pthipth_join(pthipth_t target_thread, void **status)
 {
-    pthipth_private_t *target, *self_ptr;
+    pthipth_private_t *target,*self;
 
     target = pthipth_avl_search(target_thread);
-    self_ptr = __pthipth_selfptr();
+    self = __pthipth_selfptr();
 
     if (target->state == DEFUNCT)
     {
@@ -17,9 +20,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
     }
     if (target->blockedForJoin != NULL) return -1;
 
-    target->blockedForJoin = self_ptr;
+    target->blockedForJoin = self;
 
-    change_to_state(self_ptr, BLOCKED);
+    __pthipth_change_to_state(self, BLOCKED);
 
     pthipth_yield();
 

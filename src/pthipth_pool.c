@@ -1,34 +1,40 @@
+#include <stdio.h>
 #include <stdlib.h>
+
+#include "pthipth.h"
 #include "pthipth_cond.h"
-#include "pthipth_mutex.h"
 #include "pthipth_pool.h"
 #include "pthipth_prio.h"
+#include "pthipth_queue.h"
+
+extern pthipth_private_t *pthipth_prio_head;
+extern pthipth_queue_t sleeping_state;
+extern pthipth_queue_t blocked_state;
+
+extern futex_t global_futex;
 
 static int pthipth_pool_free(pthipth_pool_t *pool);
 static void *pthipth_thread(void *arg);
 
 int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size)
 {
-    if (thread_count <= MIN_THREAD_COUNT || thread_count > MAX_THREAD_COUNT ||
-	    queue_size <= MIN_QUEUE_SIZE || queue_size > MAX_QUEUE_SIZE ||
+    if (thread_count < MIN_THREAD_COUNT || thread_count > MAX_THREAD_COUNT ||
+	    queue_size < MIN_QUEUE_SIZE || queue_size > MAX_QUEUE_SIZE ||
 	    pool == NULL)
-    {
 	return -1;
-    }
 
-    // Initialize
+    // initialize
     pool->thread_count = 0;
     pool->queue_size = queue_size;
     pool->head = pool->tail = pool->count = 0;
-    pool->shutdown = pool->started = 0;
+    pool->task_in_progess = pool->shutdown = pool->started = 0;
 
-    // Allocate thread and task queue
+    // allocate num of threads and task queues
     pool->threads = (pthipth_t *)malloc(sizeof(pthipth_t) * thread_count);
     pool->queue = (pthipth_task_t *)malloc(sizeof(pthipth_task_t) * queue_size);
 
-    // Init
-    if ((pthipth_mutex_init(&pool->lock) != 0) || pthipth_cond_init(&pool->notify) != 0 ||
-	    (pool->threads == NULL || pool->queue == NULL))
+    if (pthipth_mutex_init(&pool->lock) != 0 || pthipth_cond_init(&pool->notify) != 0 ||
+	    pool->threads == NULL || pool->queue == NULL)
     {
 	pthipth_pool_free(pool);
 	return -1;
@@ -36,7 +42,7 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 
     for (int i = 0; i < thread_count; i++)
     {
-	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, (void *)pool, HIGHEST_PRIORITY}) != 0)
+	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, pool, HIGHEST_PRIORITY}) != 0)
 	{
 	    pthipth_pool_destroy(pool);
 	    return -1;
@@ -54,11 +60,9 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 	    pool->threads == NULL || pool->queue == NULL)
 	return -1;
 
-    pthipth_mutex_lock(&pool->lock);
+    if (pool->count == pool->queue_size) return -1;
 
     int next = (pool->tail + 1) % pool->queue_size;
-
-    if (pool->count == pool->queue_size) return -1;
 
     pool->queue[pool->tail].function = task->function;
     pool->queue[pool->tail].arg = task->arg;
@@ -68,28 +72,15 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 
     pthipth_cond_signal(&pool->notify);
 
-    pthipth_mutex_unlock(&pool->lock);
-
     return 0;
 }
 
 int pthipth_pool_destroy(pthipth_pool_t *pool)
 {
-    if (pool == NULL || pool->threads == NULL || pool->queue == NULL) return -1;
-
-    pthipth_mutex_lock(&pool->lock);
-
-    if (pool->shutdown) 
-    {
-	pthipth_mutex_unlock(&pool->lock);
+    if (pool == NULL || pool->threads == NULL || pool->queue == NULL)
 	return -1;
-    }
 
-    pool->shutdown = SHUTDOWN;
-
-    pthipth_cond_broadcast(&pool->notify);
-
-    pthipth_mutex_unlock(&pool->lock);
+    if (pool->shutdown == SHUTDOWN) return -1;
 
     for (int i = 0; i < pool->thread_count; i++)
 	pthipth_join(pool->threads[i], NULL);
@@ -120,12 +111,20 @@ static void *pthipth_thread(void *arg)
 
     while (1)
     {
+	if (pool->task_in_progess == 0 && pool->count == 0)
+	{
+	    pool->shutdown = SHUTDOWN;
+	    pthipth_cond_broadcast(&pool->notify);
+	}
+
 	pthipth_mutex_lock(&pool->lock);
 
-	while (!pool->shutdown && pool->count == 0)
-	    pthipth_cond_wait(&(pool->notify), &(pool->lock));
+	while (pool->count == 0 && pool->shutdown != SHUTDOWN)
+	    pthipth_cond_wait(&pool->notify, &pool->lock);
 
-	if (pool->shutdown && pool->count == 0) break;
+	pthipth_mutex_unlock(&pool->lock);
+
+	if (pool->shutdown == SHUTDOWN) break;
 
 	task.function = pool->queue[pool->head].function;
 	task.arg = pool->queue[pool->head].arg;
@@ -137,19 +136,22 @@ static void *pthipth_thread(void *arg)
 	pool->count -= 1;
 
 	thread->priority = thread->init_priority = thread->old_priority = task.priority;
-
 	pthipth_prio_reinsert(thread);
 
-	pthipth_mutex_unlock(&pool->lock);
+	pool->task_in_progess++;
 
 	pthipth_yield();
 
 	(*(task.function))(task.arg);
+
+	pool->task_in_progess--;
+
+	// if task complete set prio high for recieve new task
+	thread->priority = thread->init_priority = thread->old_priority = HIGHEST_PRIORITY;
+	pthipth_prio_reinsert(thread);
     }
 
     pool->started--;
-
-    pthipth_mutex_unlock(&pool->lock);
 
     pthipth_exit(NULL);
 

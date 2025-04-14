@@ -1,10 +1,11 @@
-#include "pthipth_prio.h"
+// bucket queue
+
 #include <stdio.h>
 
-// Bucket Queue
-pthipth_private_t *pthipth_prio_head;
+#include "pthipth_types.h"
+#include "pthipth_prio.h"
 
-typedef enum actions { insert, inside, addLast } action_t;
+pthipth_private_t *pthipth_prio_head;
 
 void pthipth_prio_init(pthipth_private_t *node)
 {
@@ -17,125 +18,109 @@ void pthipth_prio_init(pthipth_private_t *node)
     node->inside_prev = node;
 }
 
+static void prio_insert_new_bucket(pthipth_private_t *node, pthipth_private_t *cur)
+{
+    node->inside_next = node->inside_prev = node;
+
+    node->next = cur;
+    node->prev = cur->prev;
+
+    // link the previous node back if it exists
+    if (cur->prev)
+	cur->prev->next = node;
+
+    cur->prev = node;
+
+    if (cur == pthipth_prio_head)
+	pthipth_prio_head = node;
+}
+
+static void prio_insert_inside_bucket(pthipth_private_t *node, pthipth_private_t *cur)
+{
+    node->next = node->prev = NULL;
+
+    node->inside_next = cur;
+    node->inside_prev = cur->inside_prev;
+
+    cur->inside_prev->inside_next = node;
+    cur->inside_prev = node;
+}
+
+static void prio_insert_last_bucket(pthipth_private_t *node, pthipth_private_t *cur)
+{
+    node->inside_next = node->inside_prev = node;
+
+    cur->next = node;
+
+    node->prev = cur;
+    node->next = NULL;
+}
+
 void pthipth_prio_insert(pthipth_private_t *node)
 {
-    if (pthipth_prio_head == NULL)
+    if (pthipth_prio_head == NULL) return pthipth_prio_init(node);
+
+    pthipth_private_t *cur = pthipth_prio_head;
+
+    while (cur)
     {
-	pthipth_prio_init(node);
-	return;
-    }
-
-    action_t action;
-
-    pthipth_private_t *tmp = pthipth_prio_head;
-    while (1)
-    {
-	if (node->priority == tmp->priority)
-	{
-	    action = inside;
-	    break;
-	}
-	else if (node->priority < tmp->priority)
-	{
-	    action = insert;
-	    break;
-	}
-	if (tmp->next == NULL)
-	{
-	    action = addLast;
-	    break;
-	}
-	tmp = tmp->next;
-    }
-
-    if (action == inside)
-    {
-	node->next = NULL;
-	node->prev = NULL;
-
-	node->inside_next = tmp;
-	node->inside_prev = tmp->inside_prev;
-
-	tmp->inside_prev->inside_next = node;
-	tmp->inside_prev = node;
-    }
-    else if (action == insert)
-    {
-	node->inside_next = node;
-	node->inside_prev = node;
-
-	if (node->priority < pthipth_prio_head->priority)
-	{
-	    node->prev = NULL;
-
-	    node->next = pthipth_prio_head;
-	    pthipth_prio_head->prev = node;
-	    pthipth_prio_head = node;
-
-	    return;
-	}
-
-	node->next = tmp;
-	node->prev = tmp->prev;
-
-	tmp->prev->next = node;
-	tmp->prev = node;
-    }
-    else if (action == addLast)
-    {
-	node->inside_next = node;
-	node->inside_prev = node;
-
-	tmp->next = node;
-	node->prev = tmp;
-
-	node->next = NULL;
+	if (node->priority == cur->priority)
+	    return prio_insert_inside_bucket(node, cur);
+	else if (node->priority < cur->priority)
+	    return prio_insert_new_bucket(node, cur);
+	if (cur->next == NULL)
+	    return prio_insert_last_bucket(node, cur);
+	cur = cur->next;
     }
 }
 
 // unused
 pthipth_private_t *pthipth_prio_extract_remove()
 {
-    pthipth_private_t *tmp = pthipth_prio_head;
-    if (tmp->inside_next == tmp)
+    pthipth_private_t *cur = pthipth_prio_head;
+    if (cur->inside_next == cur)
     {
-	pthipth_prio_head = tmp->next;
+	pthipth_prio_head = cur->next;
 	if (pthipth_prio_head == NULL)
 	{
-	    pthipth_prio_head = tmp;
+	    pthipth_prio_head = cur;
 	    return pthipth_prio_head;
 	}
 	pthipth_prio_head->prev = NULL;
     }
     else
     {
-	tmp->inside_next->inside_prev = tmp->inside_prev;
-	tmp->inside_prev->inside_next = tmp->inside_next;
+	cur->inside_next->inside_prev = cur->inside_prev;
+	cur->inside_prev->inside_next = cur->inside_next;
 
-	pthipth_prio_head = tmp->inside_next;
+	pthipth_prio_head = cur->inside_next;
 
-	pthipth_prio_head->next = tmp->next;
+	pthipth_prio_head->next = cur->next;
 	pthipth_prio_head->prev = NULL;
-	tmp->next = tmp->prev = NULL;
+	cur->next = cur->prev = NULL;
+	cur->inside_next = cur->inside_prev = cur;
     }
-    return tmp;
+    return cur;
 }
 
 pthipth_private_t *pthipth_prio_extract()
 {
-    pthipth_private_t *tmp = pthipth_prio_head;
+    pthipth_private_t *cur = pthipth_prio_head;
 
-    if (tmp->inside_next == tmp) return tmp;
+    if (cur == NULL || cur == cur->inside_next)
+	return cur;
 
-    pthipth_prio_head = tmp->inside_next;
+    pthipth_prio_head = cur->inside_next;
+    pthipth_prio_head->next = cur->next;
 
-    pthipth_prio_head->next = tmp->next;
+    // link the next node back if it exists
     if (pthipth_prio_head->next)
-	pthipth_prio_head->next->prev = tmp->inside_next;
-    pthipth_prio_head->prev = NULL;
-    tmp->next = tmp->prev = NULL;
+	pthipth_prio_head->next->prev = pthipth_prio_head;
 
-    return tmp;
+    pthipth_prio_head->prev = NULL;
+    cur->next = cur->prev = NULL;
+
+    return cur;
 }
 
 void pthipth_prio_delete(pthipth_private_t *node)
@@ -143,20 +128,23 @@ void pthipth_prio_delete(pthipth_private_t *node)
     node->inside_next->inside_prev = node->inside_prev;
     node->inside_prev->inside_next = node->inside_next;
 
+    // has next node
     if (node->next)
     {
 	node->inside_next->next = node->next;
 	node->inside_next->prev = node->prev;
 
-	node->next->prev = (node->inside_next == node) ?
+	node->next->prev = (node == node->inside_next) ?
 			    node->prev : node->inside_next;
     }
 
+    // has previous node
     if (node->prev)
-	node->prev->next = (node->inside_next == node) ?
+	// link previous node next
+	node->prev->next = (node == node->inside_next) ?
 			    node->next : node->inside_next;
 
-    if (pthipth_prio_head == node)
+    if (node == pthipth_prio_head)
 	pthipth_prio_head = (pthipth_prio_head == node->inside_next) ?
 	    node->next : node->inside_next;
 }
@@ -165,46 +153,45 @@ void pthipth_prio_reinsert(pthipth_private_t *node)
 {
     // delete node
     pthipth_prio_delete(node);
-    // insert node 
+    // insert node again
     pthipth_prio_insert(node);
 }
 
-pthipth_private_t *pthipth_prio_search(unsigned long tid)
+pthipth_private_t *pthipth_prio_search(pid_t tid)
 {
-    pthipth_private_t *tmp = pthipth_prio_head;
+    pthipth_private_t *cur = pthipth_prio_head;
 
-    do
+    while (cur)
     {
-	pthipth_private_t *inside_tmp = tmp;
+	pthipth_private_t *inside_cur = cur;
 	do
 	{
-	    if (inside_tmp->tid == tid)
-		return inside_tmp;
-	    inside_tmp = inside_tmp->inside_next;
-	} while (inside_tmp != tmp);
-	tmp = tmp->next;
-    } while (tmp != NULL);
+	    if (inside_cur->tid == tid)
+		return inside_cur;
+	    inside_cur = inside_cur->inside_next;
+	} while (inside_cur != cur);
+	cur = cur->next;
+    }
 
     return NULL;
 }
 
 void pthipth_prio_display()
 {
-    if (pthipth_prio_head == NULL) return;
+    printf("display bucket queue ->\n");
 
-    printf("Display Bucket Queue ->\n");
-
-    pthipth_private_t *tmp = pthipth_prio_head;
-    do
+    pthipth_private_t *cur = pthipth_prio_head;
+    while (cur)
     {
-	printf("priority %d\n", tmp->priority);
-	pthipth_private_t *inside_tmp = tmp;
+	printf("priority %d\n", cur->priority);
+	pthipth_private_t *inside_cur = cur;
 	do
 	{
-	    printf("tid %d prio: %d state: %d\n", inside_tmp->tid, inside_tmp->priority, inside_tmp->state); 
-	    inside_tmp = inside_tmp->inside_next;    
-	} while (inside_tmp != tmp);
-	tmp = tmp->next;
+	    printf("tid %d prio: %d state: %d\n", inside_cur->tid, inside_cur->priority, inside_cur->state); 
+	    inside_cur = inside_cur->inside_next;    
+	} while (inside_cur != cur);
+	cur = cur->next;
 	printf("--------------\n");
-    } while (tmp != NULL);
+    }
+    printf("end display bucket queue\n");
 }

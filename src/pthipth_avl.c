@@ -1,3 +1,7 @@
+// avl tree (self-balancing binary search tree)
+
+#include <stdio.h>
+
 #include "pthipth_avl.h"
 
 pthipth_private_t *pthipth_avl_root; 
@@ -27,7 +31,13 @@ static pthipth_private_t *rightRotate(pthipth_private_t *y)
 
     if (T2) T2->parent = y;
 
-    if (y->parent) y->parent->left = x;
+    if (y->parent)
+    {
+	if (y->parent->left == y)
+	    y->parent->left = x;
+	else
+	    y->parent->right = x;
+    }
 
     x->parent = y->parent; 
     y->parent = x;
@@ -48,7 +58,13 @@ static pthipth_private_t *leftRotate(pthipth_private_t *x)
 
     if (T2) T2->parent = x;
 
-    if (x->parent) x->parent->right = y;
+    if (x->parent)
+    {
+	if (x->parent->right == x)
+	    x->parent->right = y;
+	else 
+	    x->parent->left = y;
+    }
 
     y->parent = x->parent;
     x->parent = y;
@@ -62,14 +78,6 @@ static pthipth_private_t *leftRotate(pthipth_private_t *x)
 static int getBalance(pthipth_private_t *node)
 {
     return (node == NULL) ? 0 : getHeight(node->left) - getHeight(node->right);
-}
-
-void pthipth_avl_init(pthipth_private_t *node)
-{
-    pthipth_avl_root = node;
-
-    node->parent = node->left = node->right = NULL;
-    node->height = 1;
 }
 
 static pthipth_private_t *balance(pthipth_private_t *node)
@@ -92,21 +100,26 @@ static pthipth_private_t *balance(pthipth_private_t *node)
     return node;
 }
 
+void pthipth_avl_init(pthipth_private_t *node)
+{
+    pthipth_avl_root = node;
+
+    node->parent = node->left = node->right = NULL;
+    node->height = 1;
+}
+
+
 void pthipth_avl_insert(pthipth_private_t *node)
 {
-    if (pthipth_avl_root == NULL)
-    {
-	pthipth_avl_init(node);
-	return;
-    }
+    if (pthipth_avl_root == NULL) return pthipth_avl_init(node);
 
-    pthipth_private_t *parent, *tmp = pthipth_avl_root;
+    pthipth_private_t *parent, *cur = pthipth_avl_root;
 
-    while (tmp)
+    while (cur)
     {
-	parent = tmp;
-	if (node->tid < tmp->tid) tmp = tmp->left; 
-	else if (node->tid > tmp->tid) tmp = tmp->right;
+	parent = cur;
+	if (node->tid < cur->tid) cur = cur->left; 
+	else if (node->tid > cur->tid) cur = cur->right;
 	else return;
     }
 
@@ -124,18 +137,16 @@ void pthipth_avl_insert(pthipth_private_t *node)
     }
 }
 
-pthipth_private_t *pthipth_avl_search(unsigned long tid)
+pthipth_private_t *pthipth_avl_search(pid_t tid)
 {
-    if (pthipth_avl_root == NULL) return NULL;
+    pthipth_private_t *cur = pthipth_avl_root;
 
-    pthipth_private_t *tmp = pthipth_avl_root;
-
-    while (tmp)
+    while (cur)
     {
-	if (tid == tmp->tid) return tmp;
-	tmp = tid < tmp->tid ? tmp->left : tmp->right;
+	if (tid == cur->tid) return cur;
+	cur = tid < cur->tid ? cur->left : cur->right;
     }
-    return tmp;
+    return cur;
 }
 
 void traversal_inorder(pthipth_private_t *node)
@@ -149,6 +160,7 @@ void traversal_inorder(pthipth_private_t *node)
 
 void pthipth_avl_display()
 {
-    printf("display AVL tree\n");
+    printf("display avl tree\n");
     traversal_inorder(pthipth_avl_root);
+    printf("end display avl tree\n");
 }

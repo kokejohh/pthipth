@@ -1,3 +1,4 @@
+#include "pthipth.h"
 #include "pthipth_avl.h"
 
 pthipth_t pthipth_self()

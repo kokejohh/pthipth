@@ -51,7 +51,6 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	    pthipth_prio_reinsert(owner_tid);
     }
 
-    //self->current_mutex = mutex;
     while (__futex_down(&mutex->futx.count) != 0)
     {
 	self->current_mutex = mutex;
@@ -93,18 +92,21 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     while (tmp)
     {
 	pthipth_private_t *next_tmp = tmp->next;
-	if (tmp->state == BLOCKED && tmp->current_mutex == mutex && tmp->current_cond == NULL &&
+	if (tmp->state == BLOCKED && tmp->current_mutex == mutex &&
 		(selected == NULL || tmp->priority < selected->priority))
 	    selected = tmp;
 	tmp = next_tmp;
     }
-    if (selected) __pthipth_change_to_state(selected, READY);
+    if (selected)
+    {
+	selected->current_mutex = NULL;
+	__pthipth_change_to_state(selected, READY);
+    }
 
     pthipth_private_t *owner_tid = pthipth_avl_search(mutex->owner_tid);
 
     // reset priority after priority inheritance ends
     owner_tid->priority = owner_tid->old_priority;
-    owner_tid->current_mutex = NULL;
 
     // set default mutex value
     pthipth_mutex_init(mutex);

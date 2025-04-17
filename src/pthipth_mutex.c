@@ -5,6 +5,7 @@
 #include "pthipth_avl.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
+#include "pthipth_signal.h"
 
 extern pthipth_queue_t blocked_state;
 
@@ -18,9 +19,13 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
 {
     if (mutex == NULL) return -1;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+
     futex_init(&mutex->futx, 1);
 
     mutex->owner_tid = init_owner_tid;
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -32,6 +37,8 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
 int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 {
     if (mutex == NULL) return -1;
+
+    __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *self = __pthipth_selfptr();
 
@@ -58,9 +65,14 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	__pthipth_change_to_state(self, BLOCKED);
 
 	pthipth_yield();
+
+	__PTHIPTH_SIGNAL_BLOCK();
     }
 
     mutex->owner_tid = __pthipth_gettid();
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     return 0;
 }
 
@@ -82,6 +94,8 @@ int pthipth_mutex_trylock(pthipth_mutex_t *mutex)
 // -1 - error
 int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 {
+    __PTHIPTH_SIGNAL_BLOCK();
+
     if (mutex == NULL) return -1;
     else if (mutex->owner_tid == 0) return 0; // not any lock
     else if (mutex->owner_tid != __pthipth_gettid()) return -1; //not owner unlock
@@ -110,6 +124,8 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 
     // set default mutex value
     pthipth_mutex_init(mutex);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

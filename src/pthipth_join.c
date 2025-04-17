@@ -1,5 +1,6 @@
 #include "pthipth.h"
 #include "pthipth_avl.h"
+#include "pthipth_signal.h"
 
 // pthipth_join:
 // returns:
@@ -7,10 +8,10 @@
 // -1 - error (already join)
 int pthipth_join(pthipth_t target_thread, void **status)
 {
-    pthipth_private_t *target,*self;
+    __PTHIPTH_SIGNAL_BLOCK();
 
-    target = pthipth_avl_search(target_thread);
-    self = __pthipth_selfptr();
+    pthipth_private_t *target = pthipth_avl_search(target_thread);
+    if (target == NULL) return -1;
 
     if (target->state == DEFUNCT)
     {
@@ -20,6 +21,8 @@ int pthipth_join(pthipth_t target_thread, void **status)
     }
     if (target->blockedForJoin != NULL) return -1;
 
+    pthipth_private_t *self = __pthipth_selfptr();
+
     target->blockedForJoin = self;
 
     __pthipth_change_to_state(self, BLOCKED);
@@ -28,6 +31,8 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     if (status == NULL) return 0;
     *status = target->return_value;
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

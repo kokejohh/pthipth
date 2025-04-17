@@ -2,6 +2,7 @@
 #include "pthipth_cond.h"
 #include "pthipth_mutex.h"
 #include "pthipth_queue.h"
+#include "pthipth_signal.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -32,6 +33,8 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
     pthipth_private_t *tmp = blocked_state.head;
     pthipth_private_t *selected = NULL;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+
     while (tmp)
     {
 	pthipth_private_t *next_tmp = tmp->next;
@@ -47,6 +50,8 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 	__pthipth_change_to_state(selected, READY);
     }
 
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     return 0;
 }
 
@@ -59,6 +64,9 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
     if (cond == NULL) return -1;
 
     pthipth_private_t *tmp = blocked_state.head;
+
+    __PTHIPTH_SIGNAL_BLOCK();
+
     while (tmp)
     {
 	pthipth_private_t *next_tmp = tmp->next;
@@ -72,6 +80,8 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 	tmp = next_tmp;
     }
 
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     return 0;
 }
 
@@ -82,6 +92,8 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 {
     if (cond == NULL || mutex == NULL) return -1;
+
+    __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *self = __pthipth_selfptr();
 
@@ -94,6 +106,8 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
     pthipth_yield();
 
     pthipth_mutex_lock(mutex);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

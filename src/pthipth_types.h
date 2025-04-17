@@ -14,7 +14,6 @@ typedef struct pthipth_attr {
     int time_quota_ms;
     int aging_factor;
     int aging_time;
-
 } pthipth_attr_t;
 
 typedef struct pthipth_task {

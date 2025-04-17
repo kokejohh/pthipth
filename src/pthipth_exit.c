@@ -2,6 +2,7 @@
 #include <syscall.h>
 
 #include "pthipth.h"
+#include "pthipth_signal.h"
 
 extern futex_t global_futex;
 
@@ -16,6 +17,8 @@ void pthipth_exit(void *return_val)
     // sync 
     futex_down(&global_futex);
 
+    __PTHIPTH_SIGNAL_BLOCK();
+
     pthipth_private_t *self = __pthipth_selfptr();
 
     // change state of thread join to ready
@@ -27,6 +30,8 @@ void pthipth_exit(void *return_val)
     __pthipth_change_to_state(self, DEFUNCT);
 
     __pthipth_dispatcher(self);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     futex_up(&global_futex);
 

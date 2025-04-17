@@ -1,6 +1,7 @@
 #include "pthipth.h"
 #include "pthipth_barrier.h"
 #include "pthipth_queue.h"
+#include "pthipth_signal.h"
 
 extern pthipth_queue_t blocked_state;
 
@@ -12,8 +13,12 @@ int pthipth_barrier_init(pthipth_barrier_t *barrier, int count)
 {
     if (barrier == NULL) return -1;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+
     barrier->count = count < 0 ? 1 : count;
     atomic_store(&barrier->waiting, 0);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -26,6 +31,8 @@ int pthipth_barrier_init(pthipth_barrier_t *barrier, int count)
 int pthipth_barrier_wait(pthipth_barrier_t *barrier)
 {
     if (barrier == NULL) return -1;
+
+    __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *self = __pthipth_selfptr();
 
@@ -50,5 +57,8 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
 	tmp = next_tmp;
     }
     atomic_store(&barrier->waiting, 0);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     return PTHIPTH_BARRIER_SERIAL_THREAD;
 }

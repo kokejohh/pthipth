@@ -3,19 +3,19 @@
 #include "pthipth.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
+#include "pthipth_signal.h"
 
 futex_t global_futex;
 
 extern pthipth_private_t *pthipth_prio_head;
 extern pthipth_queue_t blocked_state;
-extern void pthipth_aging(int aging_factor);
 
 int __pthipth_dispatcher(pthipth_private_t *node)
 {
     // check sleeping thread
     __pthipth_check_sleeping();
     // pre-selection aging (not use now)
-    //__pthipth_aging(1);
+    __pthipth_aging();
 
     // calling thread to ready state
     if (node->state == RUNNING)
@@ -30,9 +30,6 @@ int __pthipth_dispatcher(pthipth_private_t *node)
 
     if (tmp == node) return -1;
 
-    // set time quota
-    __pthipth_set_thread_time_quota(TIME_SLICE);
-
     futex_up(&tmp->sched_futex);
 
     return 0;
@@ -40,15 +37,18 @@ int __pthipth_dispatcher(pthipth_private_t *node)
 
 void pthipth_yield()
 {
-    futex_down(&global_futex);
-    pthipth_private_t *self = __pthipth_selfptr();
+    __PTHIPTH_SIGNAL_BLOCK();
 
     // prevent race condition while yield
+    futex_down(&global_futex);
+
+    pthipth_private_t *self = __pthipth_selfptr();
     
     // only one thread
     if (__pthipth_dispatcher(self) == -1)
     {
 	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return;
     }
 
@@ -58,21 +58,28 @@ void pthipth_yield()
 
     futex_down(&self->sched_futex);
 
+    __pthipth_set_thread_time_quota(self->time_quota);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     return;
 }
 
-// pthipth_yieldq: 
+// pthipth_yield_qtime:
 // yield if thread runs longer than time quota (ms),
 // ms < 0: yield immediately
-void pthipth_yieldq(uint64_t ms)
+void pthipth_yield_qtime(uint64_t ms)
 {
-    if (ms < 0) return pthipth_yield();
+    if (ms <= 0) return pthipth_yield();
+
+    __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *self = __pthipth_selfptr();
     uint64_t current_time = __pthipth_gettime_ms();
     uint64_t waiting_time = current_time - self->last_selected;
-    uint64_t time_quota = (ms == 0) ? TIME_SLICE : ms;
 
-    if (waiting_time >= time_quota)
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
+    if (waiting_time >= ms)
 	pthipth_yield();
 }

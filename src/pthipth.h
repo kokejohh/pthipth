@@ -13,8 +13,6 @@
 #define IDLE_PRIORITY 30
 #define MAIN_PRIORITY 31
 
-#define TIME_SLICE 500
-
 // create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 
@@ -22,7 +20,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 void pthipth_yield(void);
 
 // yield quota
-void pthipth_yieldq(uint64_t ms);
+void pthipth_yield_qtime(uint64_t ms);
 
 // join
 int pthipth_join(pthipth_t target_thread, void **status);
@@ -35,6 +33,9 @@ void pthipth_sleep(uint64_t millisec);
 
 // self
 pthipth_t pthipth_self(void);
+
+// scanf
+int pthipth_scanf(const char *format, ...);
 
 #include "pthipth_mutex.h"
 #include "pthipth_cond.h"
@@ -57,7 +58,7 @@ int __pthipth_dispatcher(pthipth_private_t *);
 
 void __pthipth_check_sleeping();
 
-void __pthipth_aging(int aging_factor);
+void __pthipth_aging();
 
 void *__pthipth_idle(void *phony);
 

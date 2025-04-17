@@ -11,6 +11,10 @@ typedef struct pthipth_barrier pthipth_barrier_t;
 
 typedef struct pthipth_attr {
     uint64_t stackSize;
+    int time_quota_ms;
+    int aging_factor;
+    int aging_time;
+
 } pthipth_attr_t;
 
 typedef struct pthipth_task {
@@ -36,6 +40,9 @@ typedef struct pthipth_private {
     uint8_t priority, init_priority, old_priority;
     uint64_t wake_time;
     uint64_t last_selected;
+    int time_quota;
+    int aging_factor;
+    int aging_time;
     pthipth_mutex_t *current_mutex;
     pthipth_cond_t *current_cond;
     pthipth_barrier_t *current_barrier;

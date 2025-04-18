@@ -7,6 +7,8 @@ extern pthipth_queue_t sleeping_state;
 
 void *__pthipth_idle(void *phony)
 {
+    (void)phony;
+
     while (1)
     {
 	__PTHIPTH_SIGNAL_BLOCK();

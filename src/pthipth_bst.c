@@ -14,7 +14,11 @@ void pthipth_bst_init(pthipth_private_t *node)
 
 void pthipth_bst_insert(pthipth_private_t *node)
 {
-    if (pthipth_bst_root == NULL) return pthipth_bst_init(node);
+    if (pthipth_bst_root == NULL)
+    {
+	pthipth_bst_init(node);
+	return;
+    }
 
     // clear leafs
     node->left = node->right = NULL;

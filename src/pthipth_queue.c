@@ -17,7 +17,11 @@ void pthipth_queue_init(pthipth_queue_t *q, pthipth_private_t *node)
 
 void pthipth_queue_add(pthipth_queue_t *q, pthipth_private_t *node)
 {
-    if (q->head == NULL || q->tail == NULL) return pthipth_queue_init(q, node);
+    if (q->head == NULL || q->tail == NULL)
+    {
+	pthipth_queue_init(q, node);
+	return;
+    }
 
     node->next = NULL;
     node->prev = q->tail;

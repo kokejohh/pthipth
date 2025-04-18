@@ -4,9 +4,6 @@
 #include "pthipth_queue.h"
 #include "pthipth_signal.h"
 
-#include <stdio.h>
-#include <unistd.h>
-
 extern pthipth_queue_t blocked_state;
 
 // pthipth_cond_init

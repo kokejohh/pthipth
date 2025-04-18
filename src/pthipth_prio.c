@@ -58,18 +58,31 @@ static void prio_insert_last_bucket(pthipth_private_t *node, pthipth_private_t *
 
 void pthipth_prio_insert(pthipth_private_t *node)
 {
-    if (pthipth_prio_head == NULL) return pthipth_prio_init(node);
+    if (pthipth_prio_head == NULL)
+    {
+	pthipth_prio_init(node);
+	return;
+    }
 
     pthipth_private_t *cur = pthipth_prio_head;
 
     while (cur)
     {
 	if (node->priority == cur->priority)
-	    return prio_insert_inside_bucket(node, cur);
+	{
+	    prio_insert_inside_bucket(node, cur);
+	    return;
+	}
 	else if (node->priority < cur->priority)
-	    return prio_insert_new_bucket(node, cur);
+	{
+	    prio_insert_new_bucket(node, cur);
+	    return;
+	}
 	if (cur->next == NULL)
-	    return prio_insert_last_bucket(node, cur);
+	{
+	    prio_insert_last_bucket(node, cur);
+	    return;
+	}
 	cur = cur->next;
     }
 }

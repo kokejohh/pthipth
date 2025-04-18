@@ -111,7 +111,11 @@ void pthipth_avl_init(pthipth_private_t *node)
 
 void pthipth_avl_insert(pthipth_private_t *node)
 {
-    if (pthipth_avl_root == NULL) return pthipth_avl_init(node);
+    if (pthipth_avl_root == NULL) 
+    {
+	pthipth_avl_init(node);
+	return;
+    }
 
     pthipth_private_t *parent, *cur = pthipth_avl_root;
 

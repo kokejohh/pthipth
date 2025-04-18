@@ -3,7 +3,9 @@
 
 #include "pthipth_types.h"
 
-typedef struct pthipth_cond {} pthipth_cond_t;
+typedef struct pthipth_cond {
+    char unused;
+} pthipth_cond_t;
 
 int pthipth_cond_init(pthipth_cond_t *cond);
 

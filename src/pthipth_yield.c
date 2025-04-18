@@ -70,7 +70,11 @@ void pthipth_yield()
 // ms < 0: yield immediately
 void pthipth_yield_qtime(uint64_t ms)
 {
-    if (ms <= 0) return pthipth_yield();
+    if (ms <= 0) 
+    {
+	pthipth_yield();
+	return;
+    }
 
     __PTHIPTH_SIGNAL_BLOCK();
 

@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-#include "pthipth_types.h"
 #include "pthipth_prio.h"
 
 pthipth_private_t *pthipth_prio_head;

@@ -4,7 +4,7 @@
 #ifndef PTHIPTH_BST_H
 #define PTHIPTH_BST_H
 
-#include "pthipth_types.h"
+#include "pthipth_internal_type.h"
 
 void pthipth_bst_init(pthipth_private_t *node);
 

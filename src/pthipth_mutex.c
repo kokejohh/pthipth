@@ -1,7 +1,8 @@
+#include <stdlib.h>
 #include <errno.h>
 
 #include "pthipth.h"
-#include "pthipth_mutex.h"
+#include "pthipth_internal.h"
 #include "pthipth_avl.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
@@ -21,7 +22,14 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
 
     __PTHIPTH_SIGNAL_BLOCK();
 
-    futex_init(&mutex->futx, 1);
+    mutex->futx = malloc(sizeof(futex_t));
+    if (mutex->futx == NULL)
+    {
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return -1;
+    }
+
+    futex_init(mutex->futx, 1);
 
     mutex->owner_tid = init_owner_tid;
 
@@ -58,7 +66,7 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	    pthipth_prio_reinsert(owner_tid);
     }
 
-    while (__futex_down(&mutex->futx.count) != 0)
+    while (__futex_down(&mutex->futx->count) != 0)
     {
 	self->current_mutex = mutex;
 
@@ -124,6 +132,21 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 
     // set default mutex value
     pthipth_mutex_init(mutex);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
+    return 0;
+}
+
+int pthipth_mutex_destroy(pthipth_mutex_t *mutex)
+{
+    if (mutex == NULL) return -1;
+
+    __PTHIPTH_SIGNAL_BLOCK();
+
+    free(mutex->futx);
+
+    mutex->futx = NULL;
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 

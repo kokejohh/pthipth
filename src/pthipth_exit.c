@@ -2,6 +2,7 @@
 #include <syscall.h>
 
 #include "pthipth.h"
+#include "pthipth_internal.h"
 #include "pthipth_signal.h"
 
 extern futex_t global_futex;

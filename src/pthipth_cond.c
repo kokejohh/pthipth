@@ -1,6 +1,5 @@
 #include "pthipth.h"
-#include "pthipth_cond.h"
-#include "pthipth_mutex.h"
+#include "pthipth_internal.h"
 #include "pthipth_queue.h"
 #include "pthipth_signal.h"
 

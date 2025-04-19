@@ -3,7 +3,7 @@
 #ifndef PTHIPTH_PRIO_H
 #define PTHIPTH_PRIO_H
 
-#include "pthipth_types.h"
+#include "pthipth_internal_type.h"
 
 void pthipth_prio_init(pthipth_private_t *node);
 

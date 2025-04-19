@@ -1,9 +1,10 @@
 #include <stdint.h>
+#include <time.h>
 #include <unistd.h>
+
 #include <syscall.h>
 #include <sys/time.h>
 
-#include "pthipth_types.h"
 #include "pthipth_queue.h"
 #include "pthipth_prio.h"
 

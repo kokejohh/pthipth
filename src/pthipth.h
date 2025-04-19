@@ -5,13 +5,71 @@
 #ifndef PTHIPTH_H
 #define PTHIPTH_H 
 
-#include "pthipth_types.h"
+#include <stdint.h>
+#include <stdatomic.h>
+
+#include <sys/types.h>
 
 #define HIGHEST_PRIORITY 1
 #define DEFAULT_PRIORITY 28
 #define LOWEST_PRIORITY 29
 #define IDLE_PRIORITY 30
 #define MAIN_PRIORITY 31
+
+#define PTHIPTH_BARRIER_SERIAL_THREAD 1
+
+typedef struct futex futex_t;
+
+// pthipth_t
+typedef pid_t pthipth_t;
+
+// pthipth_barrier_t
+typedef struct pthipth_barrier {
+    int count;
+    atomic_int waiting;
+} pthipth_barrier_t;
+
+// pthipth_cond_t
+typedef struct pthipth_cond {
+    char unused;
+} pthipth_cond_t;
+
+// pthipth_mutex_t
+typedef struct pthipth_mutex {
+    futex_t *futx;
+    pthipth_t owner_tid;
+} pthipth_mutex_t;
+
+// pthipth_attr_t
+typedef struct pthipth_attr {
+    uint64_t stackSize;
+    int time_quota_ms;
+    int aging_factor;
+    int aging_time;
+} pthipth_attr_t;
+
+// pthipth_task_t
+typedef struct pthipth_task {
+    void *(*function)(void *);
+    void *arg;
+    int priority;
+} pthipth_task_t;
+
+// pthipth_pool_t
+typedef struct pthipth_pool {
+    pthipth_mutex_t lock;
+    pthipth_cond_t notify;
+    pthipth_t *threads;
+    pthipth_task_t *queue;
+    int thread_count;
+    int queue_size;
+    int head;
+    int tail;
+    int count;
+    int shutdown;
+    int task_in_progess;
+    int started;
+} pthipth_pool_t;
 
 // create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
@@ -37,31 +95,50 @@ pthipth_t pthipth_self(void);
 // scanf
 int pthipth_scanf(const char *format, ...);
 
-#include "pthipth_mutex.h"
-#include "pthipth_cond.h"
-#include "pthipth_barrier.h"
-#include "pthipth_pool.h"
+// barrier
+// barrier init
+int pthipth_barrier_init(pthipth_barrier_t *barrier, int count);
 
-pid_t __pthipth_gettid();
+// barrier wait
+int pthipth_barrier_wait(pthipth_barrier_t *barrier);
 
-uint64_t __pthipth_gettime_ms();
+// cond
+// cond init
+int pthipth_cond_init(pthipth_cond_t *cond);
 
-void __pthipth_set_thread_time_quota(int ms);
+// cond wait
+int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex);
 
-void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state);
+// cond signal
+int pthipth_cond_signal(pthipth_cond_t *cond);
 
-pthipth_private_t *__pthipth_selfptr();
+// cond broadcast
+int pthipth_cond_broadcast(pthipth_cond_t *cond);
 
-void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state);
+// mutex
+// mutex init
+int pthipth_mutex_init(pthipth_mutex_t *mutex);
 
-int __pthipth_dispatcher(pthipth_private_t *);
+// mutex lock
+int pthipth_mutex_lock(pthipth_mutex_t *mutex);
 
-void __pthipth_check_sleeping();
+// mutex trylock
+int pthipth_mutex_trylock(pthipth_mutex_t *mutex);
 
-void __pthipth_aging();
+// mutex unlock
+int pthipth_mutex_unlock(pthipth_mutex_t *mutex);
 
-void *__pthipth_idle(void *phony);
+// mutex destroy
+int pthipth_mutex_destroy(pthipth_mutex_t *mutex);
 
-int __pthipth_wrapper(void *arg);
+// pool
+// pool create
+int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size);
+
+// pool add
+int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task);
+
+// pool destroy
+int pthipth_pool_destroy(pthipth_pool_t *pool);
 
 #endif

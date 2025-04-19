@@ -1,12 +1,16 @@
 #include <stdlib.h>
 
 #include "pthipth.h"
-#include "pthipth_cond.h"
-#include "pthipth_mutex.h"
-#include "pthipth_pool.h"
+#include "pthipth_internal.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
 #include "pthipth_signal.h"
+
+#define MIN_THREAD_COUNT 1
+#define MAX_THREAD_COUNT 9999
+#define MIN_QUEUE_SIZE 1
+#define MAX_QUEUE_SIZE 9999
+#define SHUTDOWN 1
 
 extern pthipth_private_t *pthipth_prio_head;
 extern pthipth_queue_t sleeping_state;

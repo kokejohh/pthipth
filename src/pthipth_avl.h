@@ -3,7 +3,7 @@
 #ifndef PTHIPTH_AVL_H
 #define PTHIPTH_AVL_H
 
-#include "pthipth_types.h"
+#include "pthipth_internal_type.h"
 
 void pthipth_avl_init(pthipth_private_t *node);
 

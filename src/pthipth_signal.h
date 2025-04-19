@@ -3,6 +3,7 @@
 #ifndef PTHIPTH_SIGNAL
 #define PTHIPTH_SIGNAL
 
+#include <stddef.h>
 #include <signal.h>
 
 extern sigset_t old_mask;

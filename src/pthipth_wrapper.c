@@ -1,4 +1,5 @@
 #include "pthipth.h"
+#include "pthipth_internal.h"
 #include "pthipth_signal.h"
 
 int __pthipth_wrapper(void *thread_tcb)

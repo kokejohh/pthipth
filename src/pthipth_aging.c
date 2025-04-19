@@ -1,7 +1,5 @@
-#include <stdint.h>
-
 #include "pthipth.h"
-#include "pthipth_types.h"
+#include "pthipth_internal.h"
 #include "pthipth_prio.h"
 
 extern pthipth_private_t *pthipth_prio_head;

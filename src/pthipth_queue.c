@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-#include "pthipth_types.h"
 #include "pthipth_queue.h"
 
 pthipth_queue_t blocked_state = {.head = NULL, .tail = NULL};

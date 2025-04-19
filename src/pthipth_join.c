@@ -1,4 +1,5 @@
 #include "pthipth.h"
+#include "pthipth_internal.h"
 #include "pthipth_avl.h"
 #include "pthipth_signal.h"
 

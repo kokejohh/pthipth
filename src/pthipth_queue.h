@@ -3,7 +3,7 @@
 #ifndef PTHIPTH_QUEUE_H
 #define PTHIPTH_QUEUE_H
 
-#include "pthipth_types.h"
+#include "pthipth_internal_type.h"
 
 typedef struct pthipth_queue
 {

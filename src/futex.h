@@ -9,8 +9,6 @@
 
 #include <sys/syscall.h>
 
-#include <unistd.h>
-
 #include "futex_inline.h"
 
 // don't touch this sturcture directly

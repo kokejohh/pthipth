@@ -69,7 +69,7 @@ void pthipth_yield()
 // pthipth_yield_qtime:
 // yield if thread runs longer than time quota (ms),
 // ms < 0: yield immediately
-void pthipth_yield_qtime(uint64_t ms)
+void pthipth_yield_qtime(int64_t ms)
 {
     if (ms <= 0) 
     {
@@ -81,7 +81,7 @@ void pthipth_yield_qtime(uint64_t ms)
 
     pthipth_private_t *self = __pthipth_selfptr();
     uint64_t current_time = __pthipth_gettime_ms();
-    uint64_t waiting_time = current_time - self->last_selected;
+    int64_t waiting_time = current_time - self->last_selected;
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 

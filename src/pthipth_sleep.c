@@ -7,9 +7,15 @@
 
 extern pthipth_queue_t sleeping_state;
 
-void pthipth_sleep(uint64_t millisec)
+void pthipth_sleep(int64_t millisec)
 {
     __PTHIPTH_SIGNAL_BLOCK();
+    
+    if (millisec < 0) 
+    {
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return;
+    }
 
     pthipth_private_t *self = __pthipth_selfptr();
 

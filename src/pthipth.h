@@ -78,7 +78,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 void pthipth_yield(void);
 
 // yield quota
-void pthipth_yield_qtime(uint64_t ms);
+void pthipth_yield_qtime(int64_t ms);
 
 // join
 int pthipth_join(pthipth_t target_thread, void **status);
@@ -87,7 +87,7 @@ int pthipth_join(pthipth_t target_thread, void **status);
 void pthipth_exit(void *retval);
 
 // sleep
-void pthipth_sleep(uint64_t millisec);
+void pthipth_sleep(int64_t millisec);
 
 // self
 pthipth_t pthipth_self(void);

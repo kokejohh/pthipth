@@ -8,7 +8,6 @@
 
 futex_t global_futex;
 
-extern pthipth_private_t *pthipth_prio_head;
 extern pthipth_queue_t blocked_state;
 
 int __pthipth_dispatcher(pthipth_private_t *node)

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "pthipth.h"
@@ -42,8 +43,7 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 
-    if (pthipth_mutex_init(&pool->lock) != 0 || pthipth_cond_init(&pool->notify) != 0 ||
-	    pool->threads == NULL || pool->queue == NULL)
+    if (pthipth_cond_init(&pool->notify) != 0 || pool->threads == NULL || pool->queue == NULL)
     {
 	pthipth_pool_free(pool);
 	return -1;
@@ -76,7 +76,7 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 
     if (pool->count == pool->queue_size) return -1;
 
-    pthipth_mutex_lock(&pool->lock);
+    __PTHIPTH_SIGNAL_BLOCK();
 
     int next = (pool->tail + 1) % pool->queue_size;
 
@@ -88,7 +88,7 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 
     pthipth_cond_signal(&pool->notify);
 
-    pthipth_mutex_unlock(&pool->lock);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -125,20 +125,25 @@ static void *pthipth_thread(void *arg)
 {
     pthipth_task_t task;
     pthipth_pool_t *pool = (pthipth_pool_t *)arg;
+
+    __PTHIPTH_SIGNAL_BLOCK();
+
     pthipth_private_t *thread = __pthipth_selfptr();
 
     while (1)
     {
-	pthipth_mutex_lock(&pool->lock);
-
 	if (pool->task_in_progess == 0 && pool->count == 0)
 	{
 	    pool->shutdown = SHUTDOWN;
 	    pthipth_cond_broadcast(&pool->notify);
 	}
 
+	__PTHIPTH_SIGNAL_BLOCK();
+
 	while (pool->count == 0 && pool->shutdown != SHUTDOWN)
-	    pthipth_cond_wait(&pool->notify, &pool->lock);
+	    pthipth_cond_wait_non(&pool->notify);
+
+	__PTHIPTH_SIGNAL_BLOCK();
 
 	if (pool->shutdown == SHUTDOWN) break;
 
@@ -156,13 +161,11 @@ static void *pthipth_thread(void *arg)
 
 	pool->task_in_progess++;
 
-	pthipth_mutex_unlock(&pool->lock);
-
 	pthipth_yield();
 
 	(*(task.function))(task.arg);
 
-	pthipth_mutex_lock(&pool->lock);
+	__PTHIPTH_SIGNAL_BLOCK();
 
 	pool->task_in_progess--;
 
@@ -170,12 +173,11 @@ static void *pthipth_thread(void *arg)
 	thread->priority = thread->init_priority = thread->old_priority = HIGHEST_PRIORITY;
 	pthipth_prio_reinsert(thread);
 
-	pthipth_mutex_unlock(&pool->lock);
     }
 
     pool->started--;
 
-    pthipth_mutex_unlock(&pool->lock);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_exit(NULL);
 

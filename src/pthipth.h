@@ -112,6 +112,9 @@ int pthipth_cond_init(pthipth_cond_t *cond);
 // cond wait
 int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex);
 
+// cond wait for non-preemptive
+int pthipth_cond_wait_non(pthipth_cond_t *cond);
+
 // cond signal
 int pthipth_cond_signal(pthipth_cond_t *cond);
 

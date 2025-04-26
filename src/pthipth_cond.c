@@ -114,7 +114,7 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 // returns:
 // 0 - success
 // -1 - error
-int pthpith_cond_wait_non(pthipth_cond_t *cond)
+int pthipth_cond_wait_non(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 

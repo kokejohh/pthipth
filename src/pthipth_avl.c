@@ -1,6 +1,7 @@
 // avl tree (self-balancing binary search tree)
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "pthipth_avl.h"
 
@@ -139,6 +140,86 @@ void pthipth_avl_insert(pthipth_private_t *node)
 	if (parent->parent == NULL) pthipth_avl_root = parent;
 	parent = parent->parent;
     }
+}
+
+void pthipth_avl_delete(pthipth_private_t *node)
+{
+    if (pthipth_avl_root  == NULL || node == NULL) return;
+
+    pthipth_private_t *cur = node;
+    pthipth_private_t *tmp = cur;
+
+    if (node->left && node->right)
+    {
+	//int right = 1;
+	cur = cur->right;
+	while (cur->left)
+	{
+	    cur = cur->left;
+	    //right = 0;
+	}
+	//if (right)
+	    //tmp = cur;
+	//else
+	if (node->right == cur)
+	    tmp = cur;
+	else
+	    tmp = cur->parent;
+
+	if (cur->parent->left == cur)
+	    cur->parent->left = cur->right;
+	else
+	    cur->parent->right = cur->right;
+
+
+	if (cur->right)
+	    cur->right->parent = cur->parent;
+
+	cur->left = node->left;
+	if (cur->left) cur->left->parent = cur;
+
+	cur->right = node->right;
+	if (cur->right) cur->right->parent = cur;
+
+	cur->parent = node->parent;
+	if (node->parent == NULL)
+	{
+	    pthipth_avl_root = cur;
+	}
+	else if (node->parent->left == node)
+	{
+	    node->parent->left = cur;
+	}
+	else
+	{
+	    node->parent->right = cur;
+	}
+    }
+    else
+    {
+	cur = node->left ? node->left : node->right;
+	if (cur) cur->parent = node->parent;
+
+	if (node->parent == NULL)
+	    pthipth_avl_root = cur;
+	else if (node->parent->left == node)
+	    node->parent->left = cur;
+	else
+	    node->parent->right = cur;
+
+	tmp = node->parent;
+    }
+
+    node->parent = node->left = node->right = NULL;
+
+    pthipth_private_t *parent = tmp;
+    while (parent)
+    {
+	parent = balance(parent);
+	if (parent->parent == NULL) pthipth_avl_root = parent;
+	parent = parent->parent;
+    }
+    free(node);
 }
 
 pthipth_private_t *pthipth_avl_search(pid_t tid)

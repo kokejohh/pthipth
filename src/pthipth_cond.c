@@ -1,5 +1,6 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
+#include "pthipth_internal_type.h"
 #include "pthipth_queue.h"
 #include "pthipth_signal.h"
 
@@ -104,6 +105,26 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
     pthipth_mutex_lock(mutex);
 
     __PTHIPTH_SIGNAL_UNBLOCK();
+
+    return 0;
+}
+
+// pthipth_cond_wait
+// non-preemtive only and not use mutex
+// returns:
+// 0 - success
+// -1 - error
+int pthpith_cond_wait_non(pthipth_cond_t *cond)
+{
+    if (cond == NULL) return -1;
+
+    pthipth_private_t *self = __pthipth_selfptr();
+
+    self->current_cond = cond;
+
+    __pthipth_change_to_state(self, BLOCKED);
+
+    pthipth_yield();
 
     return 0;
 }

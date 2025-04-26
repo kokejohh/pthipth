@@ -4,6 +4,7 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_signal.h"
+#include "pthipth_avl.h"
 
 extern futex_t global_futex;
 
@@ -29,6 +30,8 @@ void pthipth_exit(void *return_val)
     self->return_value = return_val;
 
     __pthipth_change_to_state(self, DEFUNCT);
+
+    pthipth_avl_delete(self);
 
     __pthipth_dispatcher(self);
 

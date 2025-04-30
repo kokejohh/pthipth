@@ -41,6 +41,8 @@ static int __pthipth_add_main_tcb()
     main_tcb->time_quota = 0;
     main_tcb->aging_factor = 0;
     main_tcb->aging_time = 1;
+    main_tcb->child_stack = NULL;
+    main_tcb->stack_size = 0;
 
     futex_init(&main_tcb->sched_futex, 1);
 
@@ -85,7 +87,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     pthipth_private_t *new_node = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
     if (new_node == NULL) return -1;
 
-    uint64_t stackSize = (attr == NULL) ? SIGSTKSZ : (attr->stackSize <= 0) ? SIGSTKSZ : attr->stackSize;
+    uint64_t stack_size = (attr == NULL) ? SIGSTKSZ : (attr->stack_size <= 0) ? SIGSTKSZ : attr->stack_size;
     int time_quota = (attr == NULL) ? 0 : attr->time_quota_ms;
     int aging_factor = (attr == NULL) ? 0 : (attr->aging_factor <= 0) ? 0 : attr->aging_factor;
     int aging_time = (attr == NULL) ? 1 : (attr->aging_time <= 0) ? 1 : attr->aging_time;
@@ -96,11 +98,11 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     if (time_quota < 0) time_quota = 0;
 
     // allocate memory
-    char *child_stack = mmap(NULL, stackSize, PROT_READ | PROT_WRITE,
+    char *child_stack = mmap(NULL, stack_size, PROT_READ | PROT_WRITE,
 	    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
     if (child_stack == NULL) return -1;
 
-    child_stack = child_stack + stackSize;
+    child_stack = child_stack + stack_size;
 
     new_node->start_func = task->function;
     new_node->arg = task->arg;
@@ -116,6 +118,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     new_node->time_quota = time_quota;
     new_node->aging_factor = aging_factor;
     new_node->aging_time = aging_time;
+    new_node->child_stack = child_stack;
+    new_node->stack_size = stack_size;
 
     futex_init(&new_node->sched_futex, 0);
 
@@ -123,7 +127,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     if ((tid = clone(__pthipth_wrapper, child_stack, clone_flags, new_node)) == -1)
     {
 	*new_thread_ID = -1;
-	munmap(child_stack - stackSize, stackSize);
+	munmap(child_stack - stack_size, stack_size);
 	free(new_node);
 	return (-errno);
     }

@@ -42,7 +42,7 @@ typedef struct pthipth_mutex {
 
 // pthipth_attr_t
 typedef struct pthipth_attr {
-    uint64_t stackSize;
+    uint64_t stack_size;
     int time_quota_ms;
     int aging_factor;
     int aging_time;

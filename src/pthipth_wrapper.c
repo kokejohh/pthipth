@@ -12,10 +12,12 @@ int __pthipth_wrapper(void *thread_tcb)
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 
-    if (new_tcb->start_func != NULL)
-	new_tcb->start_func(new_tcb->arg);
+    void *return_val = NULL;
 
-    pthipth_exit(NULL);
+    if (new_tcb->start_func != NULL)
+	return_val = new_tcb->start_func(new_tcb->arg);
+
+    pthipth_exit(return_val);
 
     return 0;
 }

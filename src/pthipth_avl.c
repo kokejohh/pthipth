@@ -146,66 +146,56 @@ void pthipth_avl_delete(pthipth_private_t *node)
 {
     if (pthipth_avl_root  == NULL || node == NULL) return;
 
-    pthipth_private_t *cur = node;
-    pthipth_private_t *tmp = cur;
+    pthipth_private_t *succ = NULL;
+    pthipth_private_t *tmp = NULL;
 
     if (node->left && node->right)
     {
-	//int right = 1;
-	cur = cur->right;
-	while (cur->left)
+	succ = node->right;
+	while (succ->left)
+	    succ = succ->left;
+
+	if (node->right == succ)
+	    tmp = succ;
+	else
+	    tmp = succ->parent;
+
+	if (succ->parent)
 	{
-	    cur = cur->left;
-	    //right = 0;
+	    if (succ->parent->left == succ)
+		succ->parent->left = succ->right;
+	    else
+		succ->parent->right = succ->right;
 	}
-	//if (right)
-	    //tmp = cur;
-	//else
-	if (node->right == cur)
-	    tmp = cur;
-	else
-	    tmp = cur->parent;
 
-	if (cur->parent->left == cur)
-	    cur->parent->left = cur->right;
-	else
-	    cur->parent->right = cur->right;
+	if (succ->right)
+	    succ->right->parent = succ->parent;
 
+	succ->left = node->left;
+	if (succ->left) succ->left->parent = succ;
 
-	if (cur->right)
-	    cur->right->parent = cur->parent;
+	succ->right = node->right;
+	if (succ->right) succ->right->parent = succ;
 
-	cur->left = node->left;
-	if (cur->left) cur->left->parent = cur;
-
-	cur->right = node->right;
-	if (cur->right) cur->right->parent = cur;
-
-	cur->parent = node->parent;
+	succ->parent = node->parent;
 	if (node->parent == NULL)
-	{
-	    pthipth_avl_root = cur;
-	}
+	    pthipth_avl_root = succ;
 	else if (node->parent->left == node)
-	{
-	    node->parent->left = cur;
-	}
+	    node->parent->left = succ;
 	else
-	{
-	    node->parent->right = cur;
-	}
+	    node->parent->right = succ;
     }
     else
     {
-	cur = node->left ? node->left : node->right;
-	if (cur) cur->parent = node->parent;
+	succ = node->left ? node->left : node->right;
+	if (succ) succ->parent = node->parent;
 
 	if (node->parent == NULL)
-	    pthipth_avl_root = cur;
+	    pthipth_avl_root = succ;
 	else if (node->parent->left == node)
-	    node->parent->left = cur;
+	    node->parent->left = succ;
 	else
-	    node->parent->right = cur;
+	    node->parent->right = succ;
 
 	tmp = node->parent;
     }
@@ -219,7 +209,6 @@ void pthipth_avl_delete(pthipth_private_t *node)
 	if (parent->parent == NULL) pthipth_avl_root = parent;
 	parent = parent->parent;
     }
-    free(node);
 }
 
 pthipth_private_t *pthipth_avl_search(pid_t tid)

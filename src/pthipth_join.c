@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"
@@ -32,6 +34,8 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     if (status == NULL) return 0;
     *status = target->return_value;
+
+    free(target);
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 

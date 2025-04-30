@@ -58,11 +58,14 @@ void __signal_time_slice()
     pthipth_yield();
 }
 
+
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task)
 {
     if (new_thread_ID == NULL || task == NULL) return -1;
 
     int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD);
+
+    static int __idle_already = 0;
 
     if (pthipth_prio_head == NULL)
     {
@@ -80,6 +83,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 	pthipth_t idle_u_tcb;
 	pthipth_task_t task_idle = { .function = __pthipth_idle, .arg = NULL, .priority = IDLE_PRIORITY };
 	pthipth_create(&idle_u_tcb, NULL, &task_idle);
+	__idle_already = 1;
     }
 
     __PTHIPTH_SIGNAL_BLOCK();
@@ -94,7 +98,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     int priority = (task->priority) ? task->priority : DEFAULT_PRIORITY;
 
     if (task->priority < HIGHEST_PRIORITY) priority = HIGHEST_PRIORITY;
-    else if (task->priority > LOWEST_PRIORITY && task->priority != IDLE_PRIORITY) priority = LOWEST_PRIORITY;
+    else if (__idle_already && task->priority > LOWEST_PRIORITY) priority = LOWEST_PRIORITY;
+
     if (time_quota < 0) time_quota = 0;
 
     // allocate memory

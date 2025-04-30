@@ -8,12 +8,15 @@
 
 extern futex_t global_futex;
 
+__attribute__ ((noreturn))
 static void __pthipth_exit()
 {
     syscall(SYS_exit, 0);
+    __builtin_unreachable();
 }
 
 // pthipth_exit:
+__attribute__ ((noreturn))
 void pthipth_exit(void *return_val)
 {
     // sync 

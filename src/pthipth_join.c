@@ -20,6 +20,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
     {
 	if (status == NULL) return 0;
 	*status = target->return_value;
+
+	pthipth_avl_delete(target);
+	free(target);
 	return 0;
     }
     if (target->blockedForJoin != NULL) return -1;
@@ -35,6 +38,7 @@ int pthipth_join(pthipth_t target_thread, void **status)
     if (status == NULL) return 0;
     *status = target->return_value;
 
+    pthipth_avl_delete(target);
     free(target);
 
     __PTHIPTH_SIGNAL_UNBLOCK();

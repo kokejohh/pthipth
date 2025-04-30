@@ -79,7 +79,6 @@ void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state
 	    break;
 	case DEFUNCT:
 	    pthipth_prio_delete(node);
-	    pthipth_avl_delete(node);
 	    break;
 	case RUNNING: break;
     }

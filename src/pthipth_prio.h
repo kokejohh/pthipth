@@ -13,9 +13,11 @@ void pthipth_prio_reinsert(pthipth_private_t *node);
 
 void pthipth_prio_delete(pthipth_private_t *node);
 
-// unused
-pthipth_private_t *pthipth_prio_extract_remove();
+void pthipth_prio_rotate();
 
+pthipth_private_t *pthipth_prio_peek();
+
+// unused
 pthipth_private_t *pthipth_prio_extract();
 
 pthipth_private_t *pthipth_prio_search(pid_t tid);

@@ -87,7 +87,7 @@ void pthipth_prio_insert(pthipth_private_t *node)
 }
 
 // unused
-pthipth_private_t *pthipth_prio_extract_remove()
+pthipth_private_t *pthipth_prio_extract()
 {
     pthipth_private_t *cur = pthipth_prio_head;
     if (cur->inside_next == cur)
@@ -115,24 +115,26 @@ pthipth_private_t *pthipth_prio_extract_remove()
     return cur;
 }
 
-pthipth_private_t *pthipth_prio_extract()
+void pthipth_prio_rotate()
 {
     pthipth_private_t *cur = pthipth_prio_head;
 
     if (cur == NULL || cur == cur->inside_next)
-	return cur;
+	return;
 
     pthipth_prio_head = cur->inside_next;
     pthipth_prio_head->next = cur->next;
 
-    // link the next node back if it exists
     if (pthipth_prio_head->next)
 	pthipth_prio_head->next->prev = pthipth_prio_head;
 
     pthipth_prio_head->prev = NULL;
     cur->next = cur->prev = NULL;
+}
 
-    return cur;
+pthipth_private_t *pthipth_prio_peek()
+{
+    return pthipth_prio_head;
 }
 
 void pthipth_prio_delete(pthipth_private_t *node)

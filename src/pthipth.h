@@ -101,6 +101,18 @@ int pthipth_set_prio(int new_priority);
 // get priority
 int pthipth_get_prio(void);
 
+// get stack size
+int pthipth_get_stack_size(void);
+
+// get time quota
+int pthipth_get_time_quota(void);
+
+// get aging factor
+int pthipth_get_aging_factor(void);
+
+// get aging time
+int pthipth_get_aging_time(void);
+
 // barrier
 // barrier init
 int pthipth_barrier_init(pthipth_barrier_t *barrier, int count);

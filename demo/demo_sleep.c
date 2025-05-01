@@ -4,12 +4,12 @@
 
 void *child_function(void *arg)
 {
-    printf("before sleep tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("before sleep tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
     
     //sleep(1);
     pthipth_sleep(1000);
 
-    printf("after sleep tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("after sleep tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }

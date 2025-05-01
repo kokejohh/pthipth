@@ -7,17 +7,17 @@ pthipth_mutex_t mutex;
 
 void *child_function(void *arg)
 {
-    printf("before mutex lock tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("before mutex lock tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     pthipth_mutex_lock(&mutex);
 
     num++;
-    printf("between mutex lock tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("between mutex lock tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
     pthipth_yield();
 
     pthipth_mutex_unlock(&mutex);
 
-    printf("after mutex unlock tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("after mutex unlock tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }

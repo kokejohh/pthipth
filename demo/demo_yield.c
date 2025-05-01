@@ -3,11 +3,11 @@
 
 void *child_function(void *arg)
 {
-    printf("before yield hello from tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("before yield hello from tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
     
     pthipth_yield();
 
-    printf("after yield hello from tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("after yield hello from tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }

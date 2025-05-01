@@ -1,7 +1,6 @@
-#include "pthipth.h"
 #include "pthipth_internal.h"
 
-int pthipth_getprio()
+int pthipth_get_prio()
 {
     pthipth_private_t *self = __pthipth_selfptr();
 

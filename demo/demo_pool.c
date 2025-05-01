@@ -3,7 +3,7 @@
 
 void *child_function(void *arg)
 {
-    printf("tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }

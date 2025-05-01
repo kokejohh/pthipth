@@ -95,8 +95,11 @@ pthipth_t pthipth_self(void);
 // scanf
 int pthipth_scanf(const char *format, ...);
 
+// set priority
+int pthipth_set_prio(int new_priority);
+
 // get priority
-int pthipth_getprio(void);
+int pthipth_get_prio(void);
 
 // barrier
 // barrier init

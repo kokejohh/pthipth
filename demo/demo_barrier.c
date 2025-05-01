@@ -5,14 +5,14 @@ pthipth_barrier_t barrier;
 
 void *child_function(void *arg)
 {
-    printf("before barrier tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("before barrier tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     if (pthipth_barrier_wait(&barrier) == PTHIPTH_BARRIER_SERIAL_THREAD)
     {
 	printf("wake other threads\n");
     }
 
-    printf("after barrier tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("after barrier tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }

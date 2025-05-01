@@ -3,14 +3,14 @@
 
 void *child_function(void *arg)
 {
-    printf("before scanf tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("before scanf tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
     
     int num;
 
     //scanf("%d", &num);
     pthipth_scanf("%d", &num);
 
-    printf("after scanf tid %d, prio %d\n", pthipth_self(), pthipth_getprio());
+    printf("after scanf tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     printf("num is %d\n", num);
 

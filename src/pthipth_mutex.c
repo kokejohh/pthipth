@@ -102,14 +102,14 @@ int pthipth_mutex_trylock(pthipth_mutex_t *mutex)
 // -1 - error
 int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 {
-    __PTHIPTH_SIGNAL_BLOCK();
-
     if (mutex == NULL) return -1;
     else if (mutex->owner_tid == 0) return 0; // not any lock
     else if (mutex->owner_tid != __pthipth_gettid()) return -1; //not owner unlock
 
     pthipth_private_t *tmp = blocked_state.head;
     pthipth_private_t *selected = NULL;
+
+    __PTHIPTH_SIGNAL_BLOCK();
 
     while (tmp)
     {

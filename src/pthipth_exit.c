@@ -36,9 +36,9 @@ void pthipth_exit(void *return_val)
 
     __pthipth_dispatcher(self);
 
-    __PTHIPTH_SIGNAL_UNBLOCK();
-
     futex_up(&global_futex);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     __pthipth_exit();
 }

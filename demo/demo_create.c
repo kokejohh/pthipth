@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "pthipth.h"
-#include "pthipth_prio.h"
 
 void *child_function(void *arg)
 {

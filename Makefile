@@ -61,7 +61,7 @@ $(SRC_DIR)/%.o:$(SRC_DIR)/%.c $(INC)
 
 clean:
 	$(RM) -f $(OBJS) $(DEMO_EXE) $(TEST_EXE) $(LIB_STATIC) $(LIB_SHARED) \
-		$(DEMO_DIR)/$(LIB_STATIC) $(TEST_DIR)/$(LIB_STATIC) *~
+		$(DEMO_DIR)/$(LIB_STATIC) $(TEST_DIR)/$(LIB_STATIC) $(TEST_HEADER) $(DEMO_HEADER) *~
 
 tags:
 	find ./src -name "*.[cChH]" | xargs ctags

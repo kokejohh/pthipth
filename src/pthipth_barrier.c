@@ -62,3 +62,27 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
 
     return PTHIPTH_BARRIER_SERIAL_THREAD;
 }
+
+// pthipth_barrier_destroy
+// returns:
+// 0 - success
+// -1 - error
+int pthipth_barrier_destroy(pthipth_barrier_t *barrier)
+{
+    if (barrier == NULL) return -1;
+
+    __PTHIPTH_SIGNAL_BLOCK();
+
+    if (atomic_load(&barrier->waiting) > 0)
+    {
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return -1;
+    }
+
+    barrier->count = -1;
+    atomic_store(&barrier->waiting, -1);
+
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
+    return 0;
+}

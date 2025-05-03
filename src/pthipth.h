@@ -120,6 +120,9 @@ int pthipth_barrier_init(pthipth_barrier_t *barrier, int count);
 // barrier wait
 int pthipth_barrier_wait(pthipth_barrier_t *barrier);
 
+// barrier destroy
+int pthipth_barrier_destroy(pthipth_barrier_t *barrier);
+
 // cond
 // cond init
 int pthipth_cond_init(pthipth_cond_t *cond);

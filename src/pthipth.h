@@ -139,6 +139,9 @@ int pthipth_cond_signal(pthipth_cond_t *cond);
 // cond broadcast
 int pthipth_cond_broadcast(pthipth_cond_t *cond);
 
+// cond destroy
+int pthipth_cond_broadcast(pthipth_cond_t *cond);
+
 // mutex
 // mutex init
 int pthipth_mutex_init(pthipth_mutex_t *mutex);

@@ -109,8 +109,8 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
     return 0;
 }
 
-// pthipth_cond_wait
-// non-preemtive only and not use mutex
+// pthipth_cond_wait_non
+// non-preemptive only and not use mutex
 // returns:
 // 0 - success
 // -1 - error
@@ -118,13 +118,29 @@ int pthipth_cond_wait_non(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+
     pthipth_private_t *self = __pthipth_selfptr();
 
     self->current_cond = cond;
 
     __pthipth_change_to_state(self, BLOCKED);
 
+    __PTHIPTH_SIGNAL_UNBLOCK();
+
     pthipth_yield();
+
+    return 0;
+}
+
+// pthipth_cond_destroy
+// actually nothing to do
+// returns:
+// 0 - success
+// -1 - error
+int pthipth_cond_destroy(pthipth_cond_t *cond)
+{
+    if (cond == NULL) return -1;
 
     return 0;
 }

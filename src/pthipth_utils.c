@@ -1,9 +1,11 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 
 #include <syscall.h>
 #include <sys/time.h>
+#include <sys/mman.h>
 
 #include "pthipth_queue.h"
 #include "pthipth_prio.h"
@@ -83,4 +85,13 @@ void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state
 	case RUNNING: break;
     }
     node->state = to_state;
+}
+
+void __pthipth_free(pthipth_private_t *thread)
+{
+    pthipth_avl_delete(thread);
+    uint64_t stack_size = thread->stack_size;
+    char *child_stack = thread->child_stack;
+    free(thread);
+    munmap(child_stack - stack_size, stack_size);
 }

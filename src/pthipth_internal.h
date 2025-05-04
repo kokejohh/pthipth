@@ -23,4 +23,6 @@ void *__pthipth_idle(void *phony);
 
 int __pthipth_wrapper(void *arg);
 
+void __pthipth_free(pthipth_private_t *thread);
+
 #endif

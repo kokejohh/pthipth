@@ -15,8 +15,14 @@ int pthipth_join(pthipth_t target_thread, void **status)
     __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *target = pthipth_avl_search(target_thread);
+    pthipth_private_t *self = __pthipth_selfptr();
 
-    if (target == NULL) return -1;
+    if (target == NULL || target->blockedForJoin ||
+	    target->tid == self->tid)
+    {
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return -1;
+    }
 
     if (target->state == DEFUNCT)
     {
@@ -31,13 +37,6 @@ int pthipth_join(pthipth_t target_thread, void **status)
 	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
-    if (target->blockedForJoin != NULL)
-    {
-	__PTHIPTH_SIGNAL_UNBLOCK();
-	return -1;
-    }
-
-    pthipth_private_t *self = __pthipth_selfptr();
 
     target->blockedForJoin = self;
 

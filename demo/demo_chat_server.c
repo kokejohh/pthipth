@@ -68,6 +68,9 @@ void listener(void *arg)
 	    fprintf(stderr, "thread error\n");
 	    break;
 	}
+
+	pthipth_detach(tid[cid]);
+
 	cid = (cid + 1) % MAX_CONNECTIONS;
     }
     close(lis_fd);

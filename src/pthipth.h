@@ -83,6 +83,9 @@ void pthipth_yield_qtime(int64_t ms);
 // join
 int pthipth_join(pthipth_t target_thread, void **status);
 
+// detach
+int pthipth_detach(pthipth_t target_thread);
+
 // exit
 void pthipth_exit(void *retval) __attribute__ ((noreturn));
 

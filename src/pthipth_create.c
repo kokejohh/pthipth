@@ -43,6 +43,7 @@ static int __pthipth_add_main_tcb()
     main_tcb->aging_time = 1;
     main_tcb->child_stack = NULL;
     main_tcb->stack_size = 0;
+    main_tcb->is_detach = 0;
 
     futex_init(&main_tcb->sched_futex, 1);
 
@@ -125,6 +126,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     new_node->aging_time = aging_time;
     new_node->child_stack = child_stack;
     new_node->stack_size = stack_size;
+    new_node->is_detach = 0;
 
     futex_init(&new_node->sched_futex, 0);
 

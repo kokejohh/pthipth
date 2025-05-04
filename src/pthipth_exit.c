@@ -4,9 +4,11 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_signal.h"
-#include "pthipth_avl.h"
+#include "pthipth_queue.h"
 
 extern futex_t global_futex;
+
+extern pthipth_queue_t defunct_state;
 
 __attribute__ ((noreturn))
 static void __pthipth_exit()
@@ -35,6 +37,10 @@ void pthipth_exit(void *return_val)
     __pthipth_change_to_state(self, DEFUNCT);
 
     __pthipth_dispatcher(self);
+
+     // add detach thread to queue
+    if (self->is_detach && self->state == DEFUNCT)
+	pthipth_queue_add(&defunct_state, self);
 
     futex_up(&global_futex);
 

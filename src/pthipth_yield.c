@@ -8,8 +8,6 @@
 
 futex_t global_futex;
 
-extern pthipth_queue_t blocked_state;
-
 pthipth_private_t *__pthipth_scheduler(pthipth_private_t *cur)
 {
     pthipth_private_t *next = pthipth_prio_peek();
@@ -24,6 +22,8 @@ int __pthipth_dispatcher(pthipth_private_t *node)
     __pthipth_check_sleeping();
     // pre-selection aging
     __pthipth_aging();
+    // check detach thread
+    __pthipth_check_detach();
 
     // calling thread to ready state
     if (node->state == RUNNING)

@@ -25,4 +25,6 @@ int __pthipth_wrapper(void *arg);
 
 void __pthipth_free(pthipth_private_t *thread);
 
+void __pthipth_check_detach(void);
+
 #endif

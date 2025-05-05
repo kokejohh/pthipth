@@ -28,13 +28,31 @@ It is non-preemptive priority thread library inspired by pthread
 
 Read more [Documentation](/docs/documentation.md)
 
+### Example
+```
+#include "pthipth.h"
+
+void *task_example(void *arg)
+{
+  printf("task_example\n");
+  return NULL;
+}
+
+int main()
+{
+  pthipth_t tid;
+  pthipth_task_t task = {task_example, NULL, DEFAULT_PRIORITY};
+  pthipth_create(&tid, NULL, &task);
+  pthipth_join(tid, NULL);
+  return 0;
+}
+```
 ### How to build
 ###### Compiltion:
 
 ```
 make
 ```
-
   - this is equivalent to "make all," which compiles the code, creates object files, and builds libpthipth.a and libpthipth.so, along with demo and test files.
 
 ###### Library Compiltion:

@@ -122,10 +122,6 @@ this structure defines the task to be executed by the thread and is also used wi
   - argument: The argument passed to the function.
   - priority: The initial priority of the thread.
 
-#### Idle thread:
-idle thread that loops infinitely and repeatedly yields the processor.
-it has the same priority as the main thread.
-
 ### Acknowledgements
 This project includes code adapted from [Jitesh Shah and Members's](https://github.com/jitesh1337/mythread_lib) implementation.  
 The pthipth_pool code includes portions inspired by the work of [Mathias Brossard](https://github.com/mbrossard/threadpool) implementation,which is licensed under the BSD 2-Clause License.

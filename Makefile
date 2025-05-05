@@ -32,23 +32,23 @@ endif
 
 .PHONY: all lib static shared clean tags test demo
 
-all: lib demo test
+all: lib header demo test
 
 lib: static shared
 
-static: $(LIB_STATIC) header
-	ln -sf ../libpthipth.a ./test/
-	ln -sf ../libpthipth.a ./demo/
-
 header: $(TEST_HEADER) $(DEMO_HEADER)
+	ln -sf ../$(LIB_STATIC) ./test
+	ln -sf ../$(LIB_STATIC) ./demo
+
+static: $(LIB_STATIC)
+
+shared: $(LIB_SHARED)
 
 $(TEST_DIR)/%.h: $(SRC_DIR)/%.h
 	ln -snf ../$< ./test
 
 $(DEMO_DIR)/pthipth.h: $(SRC_DIR)/pthipth.h
 	ln -snf ../src/pthipth.h ./demo
-
-shared: $(LIB_SHARED)
 
 libpthipth.a: $(OBJS)
 	$(AR) rcs $@ $^
@@ -59,6 +59,16 @@ libpthipth.so: $(OBJS)
 $(SRC_DIR)/%.o:$(SRC_DIR)/%.c $(INC)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
 
+test: lib $(TEST_EXE)
+
+$(TEST_DIR)/%:$(TEST_DIR)/%.c
+	$(CC) $< -L./test -lpthipth -o $@
+
+demo: lib $(DEMO_EXE)
+
+$(DEMO_DIR)/%:$(DEMO_DIR)/%.c
+	$(CC) $< -L./demo -lpthipth -o $@
+
 clean:
 	$(RM) -f $(OBJS) $(DEMO_EXE) $(TEST_EXE) $(LIB_STATIC) $(LIB_SHARED) \
 		$(DEMO_DIR)/$(LIB_STATIC) $(TEST_DIR)/$(LIB_STATIC) $(TEST_HEADER) $(DEMO_HEADER) *~
@@ -67,13 +77,3 @@ tags:
 	find ./src -name "*.[cChH]" | xargs ctags
 
 re: clean all
-
-test: lib $(TEST_EXE)
-
-$(TEST_DIR)/%:$(TEST_DIR)/%.c
-	$(CC) $< -L./demo -lpthipth -o $@
-
-demo: lib $(DEMO_EXE)
-
-$(DEMO_DIR)/%:$(DEMO_DIR)/%.c
-	$(CC) $< -L./demo -lpthipth -o $@

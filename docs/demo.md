@@ -53,3 +53,7 @@ this program shows an example of a chat server created using pthipth
 
 #### demo_chat_client
 connect to the chat server and chat with others using demo_chat_client. You have to run demo_chat_server first.
+
+<p align="center">
+  <img src="https://media.tenor.com/1UoL-HJFGDAAAAAi/pentol-stiker-pentol.gif" alt="้help me please" />
+</p>

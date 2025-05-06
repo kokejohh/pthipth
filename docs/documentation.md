@@ -32,23 +32,27 @@ this structure defines the task to be executed by the thread and is also used wi
   - function: A pointer to the function the thread will execute.
   - argument: The argument passed to the function.
   - priority: The initial priority of the thread.
-##### pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
-execute clone system call to create a new process with shared address space. 
-The (optional) argument passed to pthipth_create specifies the attr
-be used by the created thread. We invoke a __pthipth_wrapper function upon 
-completion of clone since we dont want the newly created thread to be scheduled 
-right-away. This wrapper does a down on the futex corresponsding to this thread 
-making the thread sleep.
+
+##### int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
+you can set thread properties using ```pthipth_attr_t```, which will be applied to the created thread.
+you must also pass a ```pthipth_task_t``` that specifies the function the thread will execute.
+The first time ```pthipth_create``` is called, it registers the main thread into the TCB system (AVL tree) and then creates an idle thread.
+Internally, pthipth_create uses the clone system call to create a new thread that shares the same address space.
+The newly created thread starts by executing the ```__pthipth_wrapper``` function,
+which immediately puts the thread to sleep using a futex, so it won't be scheduled right away.
 
 ##### pthipth_join(pthipth_t target_thread, void **status);
-Our Thread Control Block(tcb) contains a blockedForJoin parameter which 
-specifies a thread that has done a join on this thread. We set the state of 
-the thread that has done a join on this thread to be DEFUNCT. This means that 
-when this thread exits, it will wake up the thread that was waiting on this 
-thread completion via join. If more than one thread try to do a mythread_join() 
-on the same target thread, only one will succeed and all others will return error.
+waits for the target thread to finish and optionally retrieves its return value.
+It first checks the target thread’s TCB; if not found, already joined, or the caller joins itself, it returns -1.
+If the target is already finished (DEFUNCT), it frees the thread and returns the result (if requested).
+Otherwise, it marks the current thread as blocked on the target, changes its state to BLOCKED ```__pthipth_change_to_state```, and yields control.
+When the target thread finishes, the current thread is resumed, receives the result, and ```__pthipth_free``` the target’s memory.
+It returns 0 on success.
 
 ##### pthipth_detach(pthipth_t target_thread);
+checks if the target thread is valid, not already detached, and not blocked for joining.
+If any condition fails, it returns -1. If the target thread is defunct, it frees the thread and returns 0.
+Otherwise, it marks the thread as detached and yields the CPU.```pthipth_yield``` will handle the actual detachment process.
 
 ##### pthipth_yield(void); and pthipth_yield_qtime(int64_t ms);
 

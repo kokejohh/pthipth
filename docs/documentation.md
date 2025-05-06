@@ -1,5 +1,9 @@
 # pthipth's Documentation
 
+<p align="center">
+  <img src="https://media.tenor.com/9CvbhM5bUo4AAAAi/zzz.gif" alt="smile" />
+</p>
+
 #### Basic Workflow:
 when threads are created, they block using futex_wait. To run a thread,
 you must call pthipth_join or pthipth_detach, which uses futex_wake.
@@ -89,7 +93,6 @@ use pthipth_create create thread has ability receive task and then if task finis
 new task form queue instead destroy themself use pthipth_cond_wait_non for wait thread not have
 task to do something when task finish will give themself highest priority
 
-
 #### pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task);
 add task to pool specifly and then use pthipth_cond_signal to wake thread in pool
 
@@ -100,7 +103,6 @@ pthipth_join all thread created with pthipth_pool_create and free pool if all th
 We have implemented an idle thread which infinitely loopes over and repeatedly 
 yields the processor. have priority same with main thread
 
-## After this is internal function for handle thread
 ### Data Structures:
 to manage and schedule threads efficiently, this library uses the following core data structures:
 1. Bucket Queue - used by the scheduler to select the next runnable thread.
@@ -109,69 +111,54 @@ to manage and schedule threads efficiently, this library uses the following core
 
   * #### Bucket Queue
 
-    * ##### void pthipth_prio_init(pthipth_private_t \*node);
-      - initialize the first node in the priority bucket queue.
-    * ##### void pthipth_prio_insert(pthipth_private_t \*node);
-      - insert a node into the bucket queue.
-      - if a node with the same priority already exists, insert into its bucket.
-      - otherwise, insert the node in order based on its priority.
-    * ##### void pthipth_prio_reinsert(pthipth_private_t \*node);
-      - remove the node and insert it again (for update its priority).
-    * ##### void pthipth_prio_delete(pthipth_private_t \*node);
-      - delete the specified node from the priority bucket queue.
-    * ##### void pthipth_prio_rotate();
-      - rotate the current bucket so the next node with the highest priority becomes the head.
-    * ##### pthipth_private_t \*pthipth_private_t \*pthipth_prio_peek();
-      - return the current head node with the highest priority without removing it.
-    * ##### pthipth_private_t \*pthipth_prio_extract();
-      - return and remove the current head node with the highest priority from the queue.
-      - the next highest-priority node (or the next in the same bucket) will become the new head.
-    * ##### pthipth_private_t \*pthipth_prio_search(pid_t tid);
-      - search and return the node with the specified thread ID (tid).
-    * ##### void pthipth_prio_display();
-      - display information about all nodes in the bucket queue.
+  * ##### void pthipth_prio_init(pthipth_private_t \*node);
+    - initialize the first node in the priority bucket queue.
+  * ##### void pthipth_prio_insert(pthipth_private_t \*node);
+    - insert a node into the bucket queue.
+    - if a node with the same priority already exists, insert into its bucket.
+    - otherwise, insert the node in order based on its priority.
+  * ##### void pthipth_prio_reinsert(pthipth_private_t \*node);
+    - remove the node and insert it again (for update its priority).
+  * ##### void pthipth_prio_delete(pthipth_private_t \*node);
+    - delete the specified node from the priority bucket queue.
+  * ##### void pthipth_prio_rotate();
+    - rotate the current bucket so the next node with the highest priority becomes the head.
+  * ##### pthipth_private_t \*pthipth_private_t \*pthipth_prio_peek();
+    - return the current head node with the highest priority without removing it.
+  * ##### pthipth_private_t \*pthipth_prio_extract();
+    - return and remove the current head node with the highest priority from the queue.
+    - the next highest-priority node (or the next in the same bucket) will become the new head.
+  * ##### pthipth_private_t \*pthipth_prio_search(pid_t tid);
+    - search and return the node with the specified thread ID (tid).
+  * ##### void pthipth_prio_display();
+    - display information about all nodes in the bucket queue.
 
   * #### AVL Tree
-    * ##### void pthipth_avl_init(pthipth_private_t *node);
-      - initialize the first node in the avl tree.
-    * ##### void pthipth_avl_insert(pthipth_private_t *node);
-      - insert a node into the avl tree.
-      - the tree will automatically balance itself.
-    * ##### void pthipth_avl_delete(pthipth_private_t *node);
-      - delete a node in the avl tree.
-      - after deletion, the tree rebalances if necessary to preserve avl properties
-    * ##### pthipth_private_t *pthipth_avl_search(pid_t tid);
-      - earch for a node with the specified thread ID (tid) in the avl tree.
-      - returns a pointer to the node if found, or NULL if not.
-    * ##### void pthipth_avl_display();
-      - display information about all nodes in the avl tree.
+  * ##### void pthipth_avl_init(pthipth_private_t *node);
+    - initialize the first node in the avl tree.
+  * ##### void pthipth_avl_insert(pthipth_private_t *node);
+    - insert a node into the avl tree.
+    - the tree will automatically balance itself.
+  * ##### void pthipth_avl_delete(pthipth_private_t *node);
+    - delete a node in the avl tree.
+    - after deletion, the tree rebalances if necessary to preserve avl properties
+  * ##### pthipth_private_t *pthipth_avl_search(pid_t tid);
+    - earch for a node with the specified thread ID (tid) in the avl tree.
+    - returns a pointer to the node if found, or NULL if not.
+  * ##### void pthipth_avl_display();
+    - display information about all nodes in the avl tree.
 
   * #### Queue
-    * ##### void pthipth_queue_init(pthipth_queue_t *q, pthipth_private_t *node);
-      - initialize the first node in the queue.
-    * ##### void pthipth_queue_add(pthipth_queue_t *q, pthipth_private_t *node);
-      - add a node to the end of the queue.
-    * ##### void pthipth_queue_delete(pthipth_queue_t *q, pthipth_private_t *node);
-      - delete the specified node from the queue.
-    * ##### void pthipth_queue_display(pthipth_queue_t *q);
-      - display information about all nodes in the queue.
+  * ##### void pthipth_queue_init(pthipth_queue_t *q, pthipth_private_t *node);
+    - initialize the first node in the queue.
+  * ##### void pthipth_queue_add(pthipth_queue_t *q, pthipth_private_t *node);
+    - add a node to the end of the queue.
+  * ##### void pthipth_queue_delete(pthipth_queue_t *q, pthipth_private_t *node);
+    - delete the specified node from the queue.
+  * ##### void pthipth_queue_display(pthipth_queue_t *q);
+    - display information about all nodes in the queue.
      
-    ```pthipth_private_t``` uses the same next and prev pointers for both the **bucket queue** and the **generic queue.**
-    This means a **node can only exist in one data structure at a time.**
-    In other words, a thread can either be in the bucket queue (e.g., in the ready or running state),
-    or in the generic queue (e.g., in the sleeping, blocked, or defunct states).
-
-#### Internal functions
-int futex_down(futex_t *futx);
-int futex_up(futex_t *futx);
-int __pthipth_wrapper(void *thread_tcb)
-void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state);
-void __pthipth_set_thread_time_quota(int ms);
-int __pthipth_dispatcher(pthipth_private_t *node);
-pthipth_private_t *__pthipth_selfptr();
-void __pthipth_check_sleeping();
-void __pthipth_check_detach(void);
-void __pthipth_aging();
-uint64_t __pthipth_gettime_ms();
-__PTHIPTH_SIGNAL_BLOCK();
-__PTHIPTH_SIGNAL_UNBLOCK();
+  ```pthipth_private_t``` uses the same next and prev pointers for both the **bucket queue** and the **generic queue.**
+  This means a **node can only exist in one data structure at a time.**
+  In other words, a thread can either be in the bucket queue (e.g., in the ready or running state),
+  or in the generic queue (e.g., in the sleeping, blocked, or defunct states).

@@ -71,7 +71,7 @@ make header
 ```
 make demo
 ```
-  - compiles the demo as a sample.
+  - compiles the demo as a sample. [Read more...](/docs/demo.md)
 
 ###### Test:
 ```

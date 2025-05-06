@@ -1,5 +1,9 @@
 # pthipth
 
+<p align="center">
+  <img src="https://media.tenor.com/km-lY7Mlqc4AAAAj/typing-pepe-the-frog.gif" alt="chil" />
+</p>
+
 ### pthipth (pitchakorn thiprangsi thread) ?
 It is non-preemptive priority thread library inspired by pthread
 
@@ -125,3 +129,7 @@ this structure defines the task to be executed by the thread and is also used wi
 ### Acknowledgements
 This project includes code adapted from [Jitesh Shah and Members's](https://github.com/jitesh1337/mythread_lib) implementation.  
 The pthipth_pool code includes portions inspired by the work of [Mathias Brossard](https://github.com/mbrossard/threadpool) implementation,which is licensed under the BSD 2-Clause License.
+
+<p align="center">
+  <img src="https://media.tenor.com/CH9ZL3SoZZUAAAAi/pepe-the-frog-pepe.gif" alt="chil" />
+</p>

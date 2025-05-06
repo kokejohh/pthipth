@@ -46,7 +46,5 @@ int pthipth_detach(pthipth_t target_thread)
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 
-    pthipth_yield();
-
     return 0;
 }

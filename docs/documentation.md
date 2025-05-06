@@ -5,10 +5,9 @@
 </p>
 
 #### Basic Workflow:
-when threads are created, they block using futex_wait. To run a thread,
-you must call pthipth_join or pthipth_detach, which uses futex_wake.
-Calling pthipth_yield() can also wake it, but is not recommended,
-as it does not handle thread termination.
+when threads are created, they block themselves using futex_wait. To run a thread,
+you must call either pthipth_join or pthipth_yield, both of which use futex_wake to wake the thread.
+Calling pthipth_yield can also wake it, but it does not handle thread termination.
 
 #### Thread states
 - RUNNING -  the thread is currently executing on the CPU.
@@ -21,19 +20,19 @@ as it does not handle thread termination.
 
 ### Struct in library
 
-##### pthipth_attr_t
+#### pthipth_attr_t
 this structure defines thread attributes and is used to pass parameters to pthipth_create. It includes:
   - stack size - specifies the size of the thread's stack
   - time quota - sets the maximum time a thread is allowed to run before it yields the processor to another thread.
   - aging - controls the aging mechanism, which includes an aging factor and aging time to adjust priority over time
 
-##### pthipth_task_t
+#### pthipth_task_t
 this structure defines the task to be executed by the thread and is also used with pthipth_create. It includes:
   - function: A pointer to the function the thread will execute.
   - argument: The argument passed to the function.
   - priority: The initial priority of the thread.
 
-##### int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
+#### pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 you can set thread properties using ```pthipth_attr_t```, which will be applied to the created thread.
 you must also pass a ```pthipth_task_t``` that specifies the function the thread will execute.
 The first time ```pthipth_create``` is called, it registers the main thread into the TCB system (AVL tree) and then creates an idle thread.
@@ -41,7 +40,7 @@ Internally, pthipth_create uses the clone system call to create a new thread tha
 The newly created thread starts by executing the ```__pthipth_wrapper``` function,
 which immediately puts the thread to sleep using a futex, so it won't be scheduled right away.
 
-##### pthipth_join(pthipth_t target_thread, void **status);
+#### pthipth_join(pthipth_t target_thread, void **status);
 waits for the target thread to finish and optionally retrieves its return value.
 It first checks the target thread’s TCB; if not found, already joined, or the caller joins itself, it returns -1.
 If the target is already finished (DEFUNCT), it frees the thread and returns the result (if requested).
@@ -49,38 +48,55 @@ Otherwise, it marks the current thread as blocked on the target, changes its sta
 When the target thread finishes, the current thread is resumed, receives the result, and ```__pthipth_free``` the target’s memory.
 It returns 0 on success.
 
-##### pthipth_detach(pthipth_t target_thread);
+> pthipth_join which uses futex_wake.
+
+#### pthipth_detach(pthipth_t target_thread);
 checks if the target thread is valid, not already detached, and not blocked for joining.
 If any condition fails, it returns -1. If the target thread is defunct, it frees the thread and returns 0.
 Otherwise, it marks the thread as detached and yields the CPU.```pthipth_yield``` will handle the actual detachment process.
 
-> you must call pthipth_join or pthipth_detach, which uses futex_wake.
+#### pthipth_yield(void);
 
-##### pthipth_yield(void);
+> pthipth_yield which uses futex_wake.
 
-##### pthipth_yield_qtime(int64_t ms);
+#### pthipth_yield_qtime(int64_t ms);
 yields the thread if it has run longer than the time quota ms specified by this function; if ms <= 0, it yields immediately.
 
-##### pthipth_exit(void *retval);
+#### pthipth_exit(void *retval);
 ends the current thread by storing its return value, waking any thread waiting to join it,
 marking itself as defunct, and if it's detached, adding itself to the defunct queue before
 handing control over to the scheduler to select the next thread ```__pthipth_dispatcher```
 
-##### pthipth_self(void);
+#### pthipth_self(void);
 returns the thread ID of the calling thread (syscall(SYS_gettid));
 
-##### pthipth_sleep(int64_t millisec);
+#### pthipth_sleep(int64_t millisec);
+puts the current thread to sleep for a specified number of milliseconds. It sets the thread’s wake_time,
+marks its state as SLEEPING, and then yields control to let other threads run.
+```pthipth_yield``` handles the sleeping state..
 
-##### pthipth_scanf(const char *format, ...);
+#### pthipth_scanf(const char *format, ...);
+thread-friendly version of scanf. It repeatedly checks if there is input available on stdin using select() without blocking.
+If no input is ready, it yields control to other threads. When input becomes available, it reads using vscanf() and returns the result.
 
-##### pthipth_set_prio(int new_priority);
+#### pthipth_set_prio(int new_priority);
+sets the current thread's priority to a new value and reinserts the thread into the bucket priority queue accordingly.
 
-##### pthipth_get_prio(void); pthipth_get_stack_size(void);  pthipth_get_time_quota(void); pthipth_get_aging_factor(void);  int pthipth_get_aging_time(void);
+#### pthipth_get_prio(void); pthipth_get_stack_size(void); pthipth_get_time_quota(void); pthipth_get_aging_factor(void); pthipth_get_aging_time(void);
+get the specified data from a thread.
 
-##### pthipth_barrier_init(pthipth_barrier_t *barrier, int count);
-##### pthipth_barrier_destroy(pthipth_barrier_t *barrier);
+#### pthipth_barrier_init(pthipth_barrier_t *barrier, int count);
+initializes a barrier with a specified thread count. It ensures the count is at least 1 and
+resets the number of waiting threads to 0 using atomic operations.
 
 #### pthipth_barrier_wait(pthipth_barrier_t *barrier);
+handles a thread waiting at a barrier. It increments the waiting count, and if the count hasn't reached the barrier's threshold,
+it blocks the thread and yields. Once the barrier count is met, it wakes up all threads waiting on the barrier and resets the waiting count.
+The function returns a special value to indicate that the current thread is the "serial thread" that first reached the barrier.
+
+#### pthipth_barrier_destroy(pthipth_barrier_t *barrier);
+if no threads are currently waiting on it. It sets the barrier’s fields to invalid values to mark it as destroyed.
+If threads are still waiting, it returns an error.
 
 #### pthipth_cond_init(pthipth_cond_t *cond);
 #### pthipth_cond_destroy(pthipth_cond_t *cond);

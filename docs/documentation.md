@@ -54,11 +54,20 @@ checks if the target thread is valid, not already detached, and not blocked for 
 If any condition fails, it returns -1. If the target thread is defunct, it frees the thread and returns 0.
 Otherwise, it marks the thread as detached and yields the CPU.```pthipth_yield``` will handle the actual detachment process.
 
-##### pthipth_yield(void); and pthipth_yield_qtime(int64_t ms);
+> you must call pthipth_join or pthipth_detach, which uses futex_wake.
+
+##### pthipth_yield(void);
+
+##### pthipth_yield_qtime(int64_t ms);
+yields the thread if it has run longer than the time quota ms specified by this function; if ms <= 0, it yields immediately.
 
 ##### pthipth_exit(void *retval);
+ends the current thread by storing its return value, waking any thread waiting to join it,
+marking itself as defunct, and if it's detached, adding itself to the defunct queue before
+handing control over to the scheduler to select the next thread ```__pthipth_dispatcher```
 
 ##### pthipth_self(void);
+returns the thread ID of the calling thread (syscall(SYS_gettid));
 
 ##### pthipth_sleep(int64_t millisec);
 

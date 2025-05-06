@@ -30,25 +30,30 @@ ifeq ($(DEBUG), 1)
 EXTRA_CFLAGS += -g
 endif
 
-.PHONY: all lib static shared clean tags test demo
+.PHONY: all lib static shared header test demo clean tags re
 
 all: lib header demo test
 
 lib: static shared
 
-header: $(TEST_HEADER) $(DEMO_HEADER)
-	ln -sf ../$(LIB_STATIC) ./test
-	ln -sf ../$(LIB_STATIC) ./demo
-
 static: $(LIB_STATIC)
 
 shared: $(LIB_SHARED)
 
-$(TEST_DIR)/%.h: $(SRC_DIR)/%.h
-	ln -snf ../$< ./test
+header: $(TEST_HEADER) $(DEMO_HEADER)
 
-$(DEMO_DIR)/pthipth.h: $(SRC_DIR)/pthipth.h
-	ln -snf ../src/pthipth.h ./demo
+test: lib $(TEST_DIR)/$(LIB_STATIC) $(TEST_HEADER) $(TEST_EXE)
+
+demo: lib $(DEMO_DIR)/$(LIB_STATIC) $(DEMO_HEADER) $(DEMO_EXE)
+
+clean:
+	$(RM) -f $(OBJS) $(DEMO_EXE) $(TEST_EXE) $(LIB_STATIC) $(LIB_SHARED) \
+		$(DEMO_DIR)/$(LIB_STATIC) $(TEST_DIR)/$(LIB_STATIC) $(TEST_HEADER) $(DEMO_HEADER) *~
+
+tags:
+	find ./src -name "*.[cChH]" | xargs ctags
+
+re: clean all
 
 libpthipth.a: $(OBJS)
 	$(AR) rcs $@ $^
@@ -59,21 +64,20 @@ libpthipth.so: $(OBJS)
 $(SRC_DIR)/%.o:$(SRC_DIR)/%.c $(INC)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
 
-test: lib $(TEST_EXE)
-
 $(TEST_DIR)/%:$(TEST_DIR)/%.c
 	$(CC) $< -L./test -lpthipth -o $@
-
-demo: lib $(DEMO_EXE)
 
 $(DEMO_DIR)/%:$(DEMO_DIR)/%.c
 	$(CC) $< -L./demo -lpthipth -o $@
 
-clean:
-	$(RM) -f $(OBJS) $(DEMO_EXE) $(TEST_EXE) $(LIB_STATIC) $(LIB_SHARED) \
-		$(DEMO_DIR)/$(LIB_STATIC) $(TEST_DIR)/$(LIB_STATIC) $(TEST_HEADER) $(DEMO_HEADER) *~
+$(TEST_DIR)/$(LIB_STATIC): $(LIB_STATIC)
+	ln -sf ../$(LIB_STATIC) ./test
 
-tags:
-	find ./src -name "*.[cChH]" | xargs ctags
+$(DEMO_DIR)/$(LIB_STATIC): $(LIB_STATIC)
+	ln -sf ../$(LIB_STATIC) ./demo
 
-re: clean all
+$(TEST_DIR)/%.h: $(SRC_DIR)/%.h
+	ln -snf ../$< ./test
+
+$(DEMO_DIR)/pthipth.h: $(SRC_DIR)/pthipth.h
+	ln -snf ../src/pthipth.h ./demo

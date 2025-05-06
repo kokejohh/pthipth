@@ -48,16 +48,12 @@ Otherwise, it marks the current thread as blocked on the target, changes its sta
 When the target thread finishes, the current thread is resumed, receives the result, and ```__pthipth_free``` the target’s memory.
 It returns 0 on success.
 
-> pthipth_join which uses futex_wake.
-
 #### pthipth_detach(pthipth_t target_thread);
 checks if the target thread is valid, not already detached, and not blocked for joining.
 If any condition fails, it returns -1. If the target thread is defunct, it frees the thread and returns 0.
 Otherwise, it marks the thread as detached and yields the CPU.```pthipth_yield``` will handle the actual detachment process.
 
 #### pthipth_yield(void);
-
-> pthipth_yield which uses futex_wake.
 
 #### pthipth_yield_qtime(int64_t ms);
 yields the thread if it has run longer than the time quota ms specified by this function; if ms <= 0, it yields immediately.
@@ -100,37 +96,63 @@ If threads are still waiting, it returns an error.
 
 #### pthipth_cond_init(pthipth_cond_t *cond);
 #### pthipth_cond_destroy(pthipth_cond_t *cond);
+performs no operations and is provided to ensure compatibility with the original implementation.
 
 #### pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex);
+makes the current thread wait on a condition variable. It unlocks the mutex,
+blocks the thread, sets its state to BLOCKED, and yields control.
+The thread will remain blocked until it is woken up by another thread.
+After being woken up, the thread locks the mutex again and continues execution
+
 #### pthipth_cond_wait_non(pthipth_cond_t *cond);
+makes the current thread wait on a condition variable. It blocks the thread,
+sets its state to BLOCKED, and then yields control. The thread will remain blocked
+until it is woken up by another thread.
+(The "non" means non-preemptive; if you are sure the thread won't be interrupted, you can use this function.)
+
+> If at least one thread has a time quota, you should use ```pthipth_cond_wait``` because it works with a mutex
+> to prevent race conditions and ensures safe access to shared resources while allowing preemption.
+> In contrast, ```pthipth_cond_wait_non``` is suitable for non-preemptive environments and doesn't require a mutex.
 
 #### pthipth_cond_signal(pthipth_cond_t *cond);
+signals a condition variable by waking up the thread with the highest priority waiting on it and changing its state to READY.
+
 #### pthipth_cond_broadcast(pthipth_cond_t *cond);
+broadcasts a condition variable by waking up all threads waiting on it, changing their state to READY.
 
 #### pthipth_mutex_init(pthipth_mutex_t *mutex);
-#### pthipth_mutex_destroy(pthipth_mutex_t *mutex);
+initializes a mutex. It allocates memory for a futex, initializes it, and sets the mutex's owner thread ID to a default value.
 
 #### pthipth_mutex_lock(pthipth_mutex_t *mutex);
+if the current thread already owns the mutex, it returns -1. If another thread owns it,
+the current thread donates its priority to prevent priority inversion.
+The thread then waits (blocks) until the mutex is available, and once acquired, it updates the mutex’s owner to the current thread's ID.
 
 #### pthipth_mutex_trylock(pthipth_mutex_t *mutex);
+if the mutex is already owned by another thread, it returns EBUSY. If the mutex is available, it calls pthipth_mutex_lock to acquire it.
 
 #### pthipth_mutex_unlock(pthipth_mutex_t *mutex);
+the current thread owns the mutex, and if there is any thread holding the lock. If the current thread is the owner,
+it searches for blocked threads waiting on the mutex. The thread with the highest priority is selected and moved to the READY state.
+The mutex owner’s priority is reset to its original value after priority inheritance. Finally, the mutex is reinitialized to its default
+
+#### pthipth_mutex_destroy(pthipth_mutex_t *mutex);
+destroys a mutex by freeing its futex and setting the futex pointer to NULL, ensuring proper resource cleanup.
 
 #### pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size);
-create pool of thread can assign number of thread and queue size
-use pthipth_create create thread has ability receive task and then if task finish will receiv
-new task form queue instead destroy themself use pthipth_cond_wait_non for wait thread not have
-task to do something when task finish will give themself highest priority
+create a pool of threads with a specified number of threads and queue size.
+Threads are created with ```pthipth_create```. When a task is finished, the thread gives itself the highest priority and
+receives a new task from the queue instead of destroying itself. ```pthipth_cond_wait_non``` is used to make threads wait when they have no tasks.
+```pthipth_cond_broadcast``` is used to wake all threads waiting on the condition when all tasks have been completed.
 
 #### pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task);
-add task to pool specifly and then use pthipth_cond_signal to wake thread in pool
+add task to the pool specifically, then use ```pthipth_cond_signal``` to wake a thread in the pool.
 
 #### pthipth_pool_destroy(pthipth_pool_t *pool);
-pthipth_join all thread created with pthipth_pool_create and free pool if all thread terminate
+```pthipth_join``` all threads created with ```pthipth_pool_create``` and free the pool once all threads have terminated.
 
 #### Idle thread:
-We have implemented an idle thread which infinitely loopes over and repeatedly 
-yields the processor. have priority same with main thread
+idle thread that loops infinitely and repeatedly yields the processor. It has the same priority as the main thread
 
 ### Data Structures:
 to manage and schedule threads efficiently, this library uses the following core data structures:

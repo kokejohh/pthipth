@@ -39,7 +39,7 @@ int pthipth_detach(pthipth_t target_thread)
     {
 	__pthipth_free(target);
 	__PTHIPTH_SIGNAL_UNBLOCK();
-	return -1;
+	return 0;
     }
 
     target->is_detach = 1;

@@ -108,10 +108,9 @@ to manage and schedule threads efficiently, this library uses the following core
 3. Queue - maintain lists of threads in special states : sleeping, blocked, defunct states
 
 ### Basic Workflow:
-when threads are created, they block using futex_wait. To run a thread,
-you must call pthipth_join or pthipth_detach, which uses futex_wake.
-Calling pthipth_yield() can also wake it, but is not recommended,
-as it does not handle thread termination.
+when threads are created, they block themselves using futex_wait.
+To run a thread, you must call either pthipth_join or pthipth_yield,
+both of which use futex_wake to wake the thread. Calling pthipth_yield can also wake it, but it does not handle thread termination.
 
 ### Struct in library
 ##### pthipth_attr_t

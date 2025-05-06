@@ -50,8 +50,10 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 
     pthipth_private_t *self = __pthipth_selfptr();
 
+    if (self == NULL) return -1;
+
     // current thread already owns the mutex
-    if (mutex->owner_tid == self->tid) return 0;
+    if (mutex->owner_tid == self->tid) return -1;
     // another thread owns the mutex: priority inheritance
     else if (mutex->owner_tid != 0)
     {

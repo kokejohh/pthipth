@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <sys/mman.h>
-
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"

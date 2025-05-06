@@ -74,26 +74,26 @@ typedef struct pthipth_pool {
 // create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 
-// yield
-void pthipth_yield(void);
-
-// yield quota
-void pthipth_yield_qtime(int64_t ms);
-
 // join
 int pthipth_join(pthipth_t target_thread, void **status);
 
 // detach
 int pthipth_detach(pthipth_t target_thread);
 
+// yield
+void pthipth_yield(void);
+
+// yield quota
+void pthipth_yield_qtime(int64_t ms);
+
 // exit
 void pthipth_exit(void *retval) __attribute__ ((noreturn));
 
-// sleep
-void pthipth_sleep(int64_t millisec);
-
 // self
 pthipth_t pthipth_self(void);
+
+// sleep
+void pthipth_sleep(int64_t millisec);
 
 // scanf
 int pthipth_scanf(const char *format, ...);
@@ -143,7 +143,7 @@ int pthipth_cond_signal(pthipth_cond_t *cond);
 int pthipth_cond_broadcast(pthipth_cond_t *cond);
 
 // cond destroy
-int pthipth_cond_broadcast(pthipth_cond_t *cond);
+int pthipth_cond_destroy(pthipth_cond_t *cond);
 
 // mutex
 // mutex init

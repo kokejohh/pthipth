@@ -127,10 +127,13 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 	__pthipth_change_to_state(selected, READY);
     }
 
-    pthipth_private_t *owner_tid = pthipth_avl_search(mutex->owner_tid);
+    pthipth_private_t *owner = pthipth_avl_search(mutex->owner_tid);
 
     // reset priority after priority inheritance ends
-    owner_tid->priority = owner_tid->old_priority;
+    int tmp_priority = owner->priority;
+    owner->priority = owner->old_priority;
+    if (tmp_priority != owner->priority)
+	pthipth_prio_reinsert(owner);
 
     // set default mutex value
     pthipth_mutex_init(mutex);

@@ -13,18 +13,28 @@ allowing other threads to run. After creation, the main thread waits for all thr
 creates 10 threads. Each thread simulates doing work for ~10 ms using nanosleep(),
 then calls ```pthipth_yield_qtime```, which checks if the thread has run longer than the specified time (11 ms) and yields if it has.
 
+#### demo_detach
+creates 10 threads. detaches itself with ```pthipth_detach```, meaning it won't be joined later.
+ 
 #### demo_sleep
 creates 10 threads. Each thread sleeps for 1000 ms (1 second) using ```pthipth_sleep```,
 a non-blocking sleep function provided by the pthipth library. This simulates pausing the thread without blocking the entire system.
 After sleeping, the thread resumes and prints a message. Using sleep() or nanosleep() would block the thread, as only one thread is running at a time.
 
 #### demo_scanf
-Creates 10 threads. Each thread reads an integer using ```pthipth_scanf```, a non-blocking alternative to scanf, then prints the value.
+creates 10 threads. Each thread reads an integer using ```pthipth_scanf```, a non-blocking alternative to scanf, then prints the value.
 Using blocking I/O like scanf would halt the entire system, since only one thread is running at a time.
+
+#### demo_signal
+creates 10 threads. Each thread increments the shared variable num 10,000 times.
+To prevent race conditions, SIGALRM (used for preemptive yielding) is blocked during each increment using ```pthipth_signal_block```
+and unblocked using ```pthipth_signal_unblock```.
 
 #### demo_mutex
 creates 10 threads. Each thread simulates mutex usage by locking a mutex ```pthipth_mutex_lock```, modifying a shared variable num,
 and yielding while still holding the lock to test mutual exclusion. After yielding, the thread unlocks the mutex ```pthipth_mutex_unlock```.
+#### demo_cond
+creates 5 threads that wait until num >= 5 and 5 threads that increment num. When num reaches 5, a broadcast wakes the waiting threads.
 
 #### demo_barrier
 creates 10 threads. Each thread waits at a barrier that releases in groups of 5 ```pthipth_barrier_wait```.

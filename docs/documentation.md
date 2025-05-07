@@ -75,6 +75,14 @@ marks its state as SLEEPING, and then yields control to let other threads run.
 thread-friendly version of scanf. It repeatedly checks if there is input available on stdin using select() without blocking.
 If no input is ready, it yields control to other threads. When input becomes available, it reads using vscanf() and returns the result.
 
+#### pthipth_signal_block(void);
+blocks the SIGALRM signal by adding it to the process's signal mask, preventing it from interrupting the current thread.
+
+#### pthipth_signal_unblock(void);
+restores the previous signal mask (old_mask), re-enabling SIGALRM delivery.
+
+__PTHIPTH_SIGNAL_UNBLOCK() restores the previous signal mask (old_mask), re-enabling SIGALRM delivery.
+
 #### pthipth_set_prio(int new_priority);
 sets the current thread's priority to a new value and reinserts the thread into the bucket priority queue accordingly.
 

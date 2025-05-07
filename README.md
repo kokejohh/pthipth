@@ -17,17 +17,18 @@ It is non-preemptive priority thread library inspired by pthread
 
 ### All functions
 ```
-1. pthipth_create            2.pthipth_join                  3. pthipth_detach
-4. pthipth_yield             5. pthipth_yield_qtime          6. pthipth_exit
-7. pthipth_self              8. pthipth_sleep                9. pthipth_scanf
-10. pthipth_set_prio         11. pthipth_get_prio            12. pthipth_get_stack_size
-13. pthipth_get_time_quota   14. pthipth_get_aging_factor    15. pthipth_get_aging_time
-16. pthipth_barrier_init     17. pthipth_barrier_wait        18. pthipth_barrier_destroy
-19. pthipth_cond_init        20. pthipth_cond_wait           21. pthipth_cond_wait_non
-22. pthipth_cond_signal      23. pthipth_cond_broadcast      24. pthipth_cond_destroy
-25. pthipth_mutex_init       26. pthipth_mutex_lock          27. pthipth_mutex_trylock
-28. pthipth_mutex_unlock     29. pthipth_mutex_destroy
-30. pthipth_pool_create      31. pthipth_pool_add            32. pthipth_pool_destroy
+1. pthipth_create            2.pthipth_join                 3. pthipth_detach
+4. pthipth_yield             5. pthipth_yield_qtime         6. pthipth_exit
+7. pthipth_self              8. pthipth_sleep               9. pthipth_scanf
+10. pthipth_signal_block     11. pthipth_signal_unblock     12. pthipth_set_prio
+13. pthipth_get_prio         14. pthipth_get_stack_size     15. pthipth_get_time_quota
+16. pthipth_get_aging_factor 17. pthipth_get_aging_time
+18. pthipth_barrier_init     19. pthipth_barrier_wait       20. pthipth_barrier_destroy
+21. pthipth_cond_init        22. pthipth_cond_wait          23. pthipth_cond_wait_non
+24. pthipth_cond_signal      25. pthipth_cond_broadcast     26. pthipth_cond_destroy
+27. pthipth_mutex_init       28. pthipth_mutex_lock         29. pthipth_mutex_trylock
+30. pthipth_mutex_unlock     31. pthipth_mutex_destroy
+32. pthipth_pool_create      33. pthipth_pool_add           34. pthipth_pool_destroy
 ```
 
 Read more [Documentation](/docs/documentation.md)

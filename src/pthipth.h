@@ -98,6 +98,12 @@ void pthipth_sleep(int64_t millisec);
 // scanf
 int pthipth_scanf(const char *format, ...);
 
+// block sigalrm
+void pthipth_signal_block(void);
+
+// unblock sigalrm
+void pthipth_signal_unblock(void);
+
 // set priority
 int pthipth_set_prio(int new_priority);
 

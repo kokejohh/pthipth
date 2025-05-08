@@ -23,7 +23,7 @@ int __pthipth_dispatcher(pthipth_private_t *node)
     // pre-selection aging
     __pthipth_aging();
     // check detach thread
-    __pthipth_check_detach();
+    __pthipth_check_detach(node);
 
     // calling thread to ready state
     if (node->state == RUNNING)

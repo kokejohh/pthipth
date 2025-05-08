@@ -1,3 +1,5 @@
+#include <sched.h>
+
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"
@@ -14,7 +16,7 @@ int pthipth_join(pthipth_t target_thread, void **status)
     pthipth_private_t *target = pthipth_avl_search(target_thread);
     pthipth_private_t *self = __pthipth_selfptr();
 
-    if (target == NULL || target->blockedForJoin ||
+    if (target == NULL || self == NULL || target->blockedForJoin ||
 	    target->tid == self->tid)
     {
 	__PTHIPTH_SIGNAL_UNBLOCK();
@@ -23,6 +25,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     if (target->state == DEFUNCT)
     {
+	while (target->tid_watch != 0)
+	    sched_yield();
+
 	if (status == NULL)
 	{
 	    __pthipth_free(target);
@@ -41,6 +46,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     pthipth_yield();
 
+    while (target->tid_watch != 0)
+	sched_yield();
+
     __PTHIPTH_SIGNAL_BLOCK();
 
     if (status == NULL)
@@ -52,7 +60,6 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     *status = target->return_value;
     __pthipth_free(target);
-
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;

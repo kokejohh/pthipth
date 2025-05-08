@@ -1,3 +1,5 @@
+#include <sched.h>
+
 #include "pthipth.h" 
 #include "pthipth_avl.h"
 #include "pthipth_internal.h"
@@ -6,7 +8,7 @@
 
 pthipth_queue_t defunct_state;
 
-void __pthipth_check_detach()
+void __pthipth_check_detach(pthipth_private_t *node)
 {
     pthipth_private_t *tmp = defunct_state.head;
 
@@ -16,8 +18,11 @@ void __pthipth_check_detach()
     {
 	pthipth_private_t *next_tmp = tmp->next;
 	
-	pthipth_queue_delete(&defunct_state, tmp);
-	__pthipth_free(tmp);
+	if (node != tmp && tmp->tid_watch == 0)
+	{
+	    pthipth_queue_delete(&defunct_state, tmp);
+	    __pthipth_free(tmp);
+	}
 
 	tmp = next_tmp;
     }
@@ -37,6 +42,9 @@ int pthipth_detach(pthipth_t target_thread)
 
     if (target->state == DEFUNCT)
     {
+	while (target->tid_watch != 0)
+	    sched_yield();
+
 	__pthipth_free(target);
 	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;

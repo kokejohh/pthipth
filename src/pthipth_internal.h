@@ -25,6 +25,6 @@ int __pthipth_wrapper(void *arg);
 
 void __pthipth_free(pthipth_private_t *thread);
 
-void __pthipth_check_detach(void);
+void __pthipth_check_detach(pthipth_private_t *node);
 
 #endif

@@ -49,9 +49,10 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 	return -1;
     }
 
+    pthipth_task_t task = {pthipth_thread, pool, HIGHEST_PRIORITY};
     for (int i = 0; i < thread_count; i++)
     {
-	if (pthipth_create(&pool->threads[i], attr, &(pthipth_task_t){ pthipth_thread, pool, HIGHEST_PRIORITY}) != 0)
+	if (pthipth_create(&pool->threads[i], attr, &task) != 0)
 	{
 	    pthipth_pool_destroy(pool);
 
@@ -172,14 +173,11 @@ static void *pthipth_thread(void *arg)
 	// if task complete set prio high for recieve new task
 	thread->priority = thread->init_priority = thread->old_priority = HIGHEST_PRIORITY;
 	pthipth_prio_reinsert(thread);
-
     }
 
     pool->started--;
 
     __PTHIPTH_SIGNAL_UNBLOCK();
-
-    pthipth_exit(NULL);
 
     return NULL;
 }

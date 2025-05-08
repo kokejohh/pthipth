@@ -16,6 +16,7 @@ typedef enum pthipth_state {
 // pthipth_private_t
 typedef struct pthipth_private {
     pid_t tid;
+    pid_t tid_watch;
     pthipth_state_t state;
     void *(*start_func)(void *);
     void *arg;

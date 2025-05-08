@@ -64,7 +64,8 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 {
     if (new_thread_ID == NULL || task == NULL) return -1;
 
-    int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD);
+    int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD
+	    | CLONE_CHILD_SETTID| CLONE_CHILD_CLEARTID);
 
     static int __idle_already = 0;
 
@@ -131,7 +132,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     futex_init(&new_node->sched_futex, 0);
 
     pid_t tid;
-    if ((tid = clone(__pthipth_wrapper, child_stack, clone_flags, new_node)) == -1)
+    if ((tid = clone(__pthipth_wrapper, child_stack, clone_flags, new_node, NULL, NULL, &new_node->tid_watch)) == -1)
     {
 	*new_thread_ID = -1;
 	munmap(child_stack - stack_size, stack_size);

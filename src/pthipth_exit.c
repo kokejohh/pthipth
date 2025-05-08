@@ -38,13 +38,13 @@ void pthipth_exit(void *return_val)
 
     __pthipth_dispatcher(self);
 
-     // add detach thread to queue
+    // add detach thread to queue
     if (self->is_detach && self->state == DEFUNCT)
 	pthipth_queue_add(&defunct_state, self);
 
-    futex_up(&global_futex);
-
     __PTHIPTH_SIGNAL_UNBLOCK();
+
+    futex_up(&global_futex);
 
     __pthipth_exit();
 }

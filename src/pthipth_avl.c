@@ -1,7 +1,6 @@
 // avl tree (self-balancing binary search tree)
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "pthipth_avl.h"
 
@@ -217,7 +216,8 @@ pthipth_private_t *pthipth_avl_search(pid_t tid)
 
     while (cur)
     {
-	if (tid == cur->tid) return cur;
+	if (tid == cur->tid)
+	    return cur;
 	cur = tid < cur->tid ? cur->left : cur->right;
     }
     return cur;

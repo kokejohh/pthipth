@@ -94,10 +94,7 @@ pthipth_private_t *pthipth_prio_extract()
     {
 	pthipth_prio_head = cur->next;
 	if (pthipth_prio_head == NULL)
-	{
-	    pthipth_prio_head = cur;
-	    return pthipth_prio_head;
-	}
+	    return NULL;
 	pthipth_prio_head->prev = NULL;
     }
     else
@@ -112,6 +109,7 @@ pthipth_private_t *pthipth_prio_extract()
 	cur->next = cur->prev = NULL;
 	cur->inside_next = cur->inside_prev = cur;
     }
+
     return cur;
 }
 
@@ -201,7 +199,7 @@ void pthipth_prio_display()
 	pthipth_private_t *inside_cur = cur;
 	do
 	{
-	    printf("tid %d prio: %d state: %d\n", inside_cur->tid, inside_cur->priority, inside_cur->state); 
+	    printf("tid %d prio: %d state: %d\n", inside_cur->tid, inside_cur->priority, inside_cur->state);
 	    inside_cur = inside_cur->inside_next;    
 	} while (inside_cur != cur);
 	cur = cur->next;

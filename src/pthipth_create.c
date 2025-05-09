@@ -18,7 +18,7 @@ extern pthipth_private_t *pthipth_prio_head;
 
 extern futex_t global_futex;
 
-sigset_t old_mask;
+sigset_t set;
 
 static int __pthipth_add_main_tcb()
 {
@@ -71,9 +71,9 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 
     if (pthipth_prio_head == NULL)
     {
-	signal(SIGALRM, __signal_time_slice);
-
 	__PTHIPTH_SIGNAL_INIT();
+
+	signal(SIGALRM, __signal_time_slice);
 
 	// add main thread
 	int ret = __pthipth_add_main_tcb();

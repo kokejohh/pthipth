@@ -10,10 +10,14 @@ It is non-preemptive priority thread library inspired by pthread
 ### How does pthipth differ from pthread ?
 1. non-preemptive, meaning threads voluntarily yield control.
 2. support thread priorities.
-3. the scheduler is fully controlled in user space.
-4. each thread can have a time quota.
-5. each thread has its own aging mechanism to prevent starvation.
-6. can use thread pool to manage thread creation and reuse efficiently.
+3. each thread can have a time quota.
+4. each thread has its own aging mechanism to prevent starvation.
+5. can use thread pool to manage thread creation and reuse efficiently.
+
+### Basic Workflow:
+when threads are created, they block themselves using futex_wait.
+To run a thread, you must call either pthipth_join or pthipth_yield,
+both of which use futex_wake to wake the thread. Calling pthipth_yield can also wake it, but it does not handle thread termination.
 
 ### All functions
 ```
@@ -107,11 +111,6 @@ to manage and schedule threads efficiently, this library uses the following core
 1. Bucket Queue - used by the scheduler to select the next runnable thread.
 2. AVL Tree - each node stores a Thread Control Block (TCB)
 3. Queue - maintain lists of threads in special states : sleeping, blocked, defunct states
-
-### Basic Workflow:
-when threads are created, they block themselves using futex_wait.
-To run a thread, you must call either pthipth_join or pthipth_yield,
-both of which use futex_wake to wake the thread. Calling pthipth_yield can also wake it, but it does not handle thread termination.
 
 ### Struct in library
 ##### pthipth_attr_t

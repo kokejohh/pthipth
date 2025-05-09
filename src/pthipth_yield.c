@@ -43,10 +43,8 @@ int __pthipth_dispatcher(pthipth_private_t *node)
     return 0;
 }
 
-void pthipth_yield()
+void __pthipth_yield()
 {
-    __PTHIPTH_SIGNAL_BLOCK();
-
     // prevent race condition while yield
     futex_down(&global_futex);
 
@@ -56,7 +54,6 @@ void pthipth_yield()
     if (__pthipth_dispatcher(self) == -1)
     {
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return;
     }
 
@@ -67,10 +64,11 @@ void pthipth_yield()
     futex_down(&self->sched_futex);
 
     __pthipth_set_thread_time_quota(self->time_quota);
+}
 
-    __PTHIPTH_SIGNAL_UNBLOCK();
-
-    return;
+void pthipth_yield()
+{
+    raise(SIGALRM);
 }
 
 // pthipth_yield_qtime:

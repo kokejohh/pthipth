@@ -21,10 +21,10 @@ static void __pthipth_exit()
 __attribute__ ((noreturn))
 void pthipth_exit(void *return_val)
 {
+    __PTHIPTH_SIGNAL_BLOCK();
+
     // sync 
     futex_down(&global_futex);
-
-    __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *self = __pthipth_selfptr();
 
@@ -36,15 +36,13 @@ void pthipth_exit(void *return_val)
 
     __pthipth_change_to_state(self, DEFUNCT);
 
-    __pthipth_dispatcher(self);
-
     // add detach thread to queue
     if (self->is_detach && self->state == DEFUNCT)
 	pthipth_queue_add(&defunct_state, self);
 
-    __PTHIPTH_SIGNAL_UNBLOCK();
+    __pthipth_dispatcher(self);
 
     futex_up(&global_futex);
-
+    
     __pthipth_exit();
 }

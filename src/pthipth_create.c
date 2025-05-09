@@ -56,7 +56,7 @@ static int __pthipth_add_main_tcb()
 void __signal_time_slice()
 {
     //printf("timer interrupt %d\n", __pthipth_gettid());
-    pthipth_yield();
+    __pthipth_yield();
 }
 
 

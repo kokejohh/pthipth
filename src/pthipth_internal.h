@@ -27,4 +27,6 @@ void __pthipth_free(pthipth_private_t *thread);
 
 void __pthipth_check_detach(pthipth_private_t *node);
 
+void __pthipth_yield(void);
+
 #endif

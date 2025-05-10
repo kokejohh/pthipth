@@ -18,7 +18,7 @@ extern pthipth_private_t *pthipth_prio_head;
 
 extern futex_t global_futex;
 
-sigset_t set;
+sigset_t pthipth_set;
 
 static int __pthipth_add_main_tcb()
 {
@@ -53,13 +53,6 @@ static int __pthipth_add_main_tcb()
     return 0;
 }
 
-void __signal_time_slice()
-{
-    //printf("timer interrupt %d\n", __pthipth_gettid());
-    __pthipth_yield();
-}
-
-
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task)
 {
     if (new_thread_ID == NULL || task == NULL) return -1;
@@ -91,7 +84,11 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     __PTHIPTH_SIGNAL_BLOCK();
 
     pthipth_private_t *new_node = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
-    if (new_node == NULL) return -1;
+    if (new_node == NULL)
+    {
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return -1;
+    }
 
     uint64_t stack_size = (attr == NULL) ? SIGSTKSZ : (attr->stack_size <= 0) ? SIGSTKSZ : attr->stack_size;
     int time_quota = (attr == NULL) ? 0 : attr->time_quota_ms;
@@ -107,7 +104,12 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     // allocate memory
     char *child_stack = mmap(NULL, stack_size, PROT_READ | PROT_WRITE,
 	    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
-    if (child_stack == NULL) return -1;
+    if (child_stack == NULL)
+    {
+	free(new_node);
+	__PTHIPTH_SIGNAL_UNBLOCK();
+	return -1;
+    }
 
     child_stack = child_stack + stack_size;
 
@@ -137,13 +139,18 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 	*new_thread_ID = -1;
 	munmap(child_stack - stack_size, stack_size);
 	free(new_node);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return (-errno);
     }
 
     *new_thread_ID = new_node->tid = tid;
 
+    futex_down(&global_futex);
+
     pthipth_prio_insert(new_node);
     pthipth_avl_insert(new_node);
+
+    futex_up(&global_futex);
 
     __PTHIPTH_SIGNAL_UNBLOCK();
 

@@ -104,6 +104,15 @@ void pthipth_signal_block(void);
 // unblock sigalrm
 void pthipth_signal_unblock(void);
 
+// print is sigalrm blocked?
+void pthipth_signal_print(void);
+
+// ignore sigalrm
+void pthipth_signal_ignore(void);
+
+// restore sigalrm
+void pthipth_signal_restore(void);
+
 // set priority
 int pthipth_set_prio(int new_priority);
 

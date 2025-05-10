@@ -39,8 +39,8 @@ int pthipth_detach(pthipth_t target_thread)
 
     if (target == NULL || target->is_detach || target->blockedForJoin)
     {
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return -1;
     }
 
@@ -51,19 +51,16 @@ int pthipth_detach(pthipth_t target_thread)
 	while (target->tid_watch != 0)
 	    sched_yield();
 
-	futex_down(&global_futex);
-
 	__pthipth_free(target);
 
 	__PTHIPTH_SIGNAL_UNBLOCK();
-	futex_up(&global_futex);
 	return 0;
     }
 
     target->is_detach = 1;
 
-    __PTHIPTH_SIGNAL_UNBLOCK();
     futex_up(&global_futex);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

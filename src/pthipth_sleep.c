@@ -7,22 +7,22 @@
 
 extern pthipth_queue_t sleeping_state;
 
+extern futex_t global_futex;
+
 void pthipth_sleep(int64_t millisec)
 {
-    __PTHIPTH_SIGNAL_BLOCK();
-    
-    if (millisec < 0) 
-    {
-	__PTHIPTH_SIGNAL_UNBLOCK();
-	return;
-    }
+    if (millisec < 0) return;
 
     pthipth_private_t *self = __pthipth_selfptr();
+
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
 
     self->wake_time = __pthipth_gettime_ms() + millisec;
 
     __pthipth_change_to_state(self, SLEEPING);
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();

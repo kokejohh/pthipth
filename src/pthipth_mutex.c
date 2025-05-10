@@ -10,6 +10,8 @@
 
 extern pthipth_queue_t blocked_state;
 
+extern futex_t global_futex;
+
 pthipth_t init_owner_tid = 0;
 
 // pthipth_mutex_init
@@ -20,20 +22,12 @@ int pthipth_mutex_init(pthipth_mutex_t *mutex)
 {
     if (mutex == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     mutex->futx = malloc(sizeof(futex_t));
-    if (mutex->futx == NULL)
-    {
-	__PTHIPTH_SIGNAL_UNBLOCK();
-	return -1;
-    }
+    if (mutex->futx == NULL) return -1;
 
     futex_init(mutex->futx, 1);
 
     mutex->owner_tid = init_owner_tid;
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -46,8 +40,6 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 {
     if (mutex == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *self = __pthipth_selfptr();
 
     if (self == NULL) return -1;
@@ -57,6 +49,9 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
     // another thread owns the mutex: priority inheritance
     else if (mutex->owner_tid != 0)
     {
+	__PTHIPTH_SIGNAL_BLOCK();
+	futex_down(&global_futex);
+
 	pthipth_private_t *owner_tid = pthipth_avl_search(mutex->owner_tid);
 
 	// donate priority to prevent priority inversion
@@ -66,22 +61,28 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	// update priority in bucket
 	if (owner_tid->state == READY)
 	    pthipth_prio_reinsert(owner_tid);
+
+	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
     }
 
     while (__futex_down(&mutex->futx->count) != 0)
     {
 	self->current_mutex = mutex;
 
+	__PTHIPTH_SIGNAL_BLOCK();
+	futex_down(&global_futex);
+
 	__pthipth_change_to_state(self, BLOCKED);
+
+	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 
 	pthipth_yield();
 
-	__PTHIPTH_SIGNAL_BLOCK();
     }
 
     mutex->owner_tid = __pthipth_gettid();
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -108,10 +109,11 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     else if (mutex->owner_tid == 0) return 0; // not any lock
     else if (mutex->owner_tid != __pthipth_gettid()) return -1; //not owner unlock
 
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
+
     pthipth_private_t *tmp = blocked_state.head;
     pthipth_private_t *selected = NULL;
-
-    __PTHIPTH_SIGNAL_BLOCK();
 
     while (tmp)
     {
@@ -138,6 +140,7 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     // set default mutex value
     pthipth_mutex_init(mutex);
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
@@ -147,13 +150,9 @@ int pthipth_mutex_destroy(pthipth_mutex_t *mutex)
 {
     if (mutex == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     free(mutex->futx);
 
     mutex->futx = NULL;
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

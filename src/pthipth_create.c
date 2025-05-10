@@ -151,7 +151,6 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     pthipth_avl_insert(new_node);
 
     futex_up(&global_futex);
-
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;

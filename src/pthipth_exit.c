@@ -21,9 +21,8 @@ static void __pthipth_exit()
 __attribute__ ((noreturn))
 void pthipth_exit(void *return_val)
 {
-    __PTHIPTH_SIGNAL_BLOCK();
-
     // sync 
+    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *self = __pthipth_selfptr();

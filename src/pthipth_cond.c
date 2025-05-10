@@ -6,6 +6,8 @@
 
 extern pthipth_queue_t blocked_state;
 
+extern futex_t global_futex;
+
 // pthipth_cond_init
 // returns:
 // 0 - success
@@ -13,8 +15,6 @@ extern pthipth_queue_t blocked_state;
 int pthipth_cond_init(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
-
-    (void)cond;
 
     return 0;
 }
@@ -27,10 +27,11 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
+
     pthipth_private_t *tmp = blocked_state.head;
     pthipth_private_t *selected = NULL;
-
-    __PTHIPTH_SIGNAL_BLOCK();
 
     while (tmp)
     {
@@ -41,12 +42,14 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 	    selected = tmp;
 	tmp = next_tmp;
     }
-    if (selected) {
+    if (selected)
+    {
 	selected->current_mutex = NULL;
 	selected->current_cond = NULL;
 	__pthipth_change_to_state(selected, READY);
     }
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
@@ -60,9 +63,10 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
-    pthipth_private_t *tmp = blocked_state.head;
-
     __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
+
+    pthipth_private_t *tmp = blocked_state.head;
 
     while (tmp)
     {
@@ -77,6 +81,7 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 	tmp = next_tmp;
     }
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
@@ -90,21 +95,23 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 {
     if (cond == NULL || mutex == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *self = __pthipth_selfptr();
 
     self->current_cond = cond;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
+
     __pthipth_change_to_state(self, BLOCKED);
+
+    futex_up(&global_futex);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_mutex_unlock(mutex);
 
     pthipth_yield();
 
     pthipth_mutex_lock(mutex);
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -118,14 +125,16 @@ int pthipth_cond_wait_non(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *self = __pthipth_selfptr();
 
     self->current_cond = cond;
 
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
+
     __pthipth_change_to_state(self, BLOCKED);
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();

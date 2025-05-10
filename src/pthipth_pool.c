@@ -29,8 +29,6 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 	    pool == NULL)
 	return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     // initialize
     pool->thread_count = 0;
     pool->queue_size = queue_size;
@@ -40,8 +38,6 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
     // allocate num of threads and task queues
     pool->threads = (pthipth_t *)malloc(sizeof(pthipth_t) * thread_count);
     pool->queue = (pthipth_task_t *)malloc(sizeof(pthipth_task_t) * queue_size);
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     if (pthipth_cond_init(&pool->notify) != 0 || pool->threads == NULL || pool->queue == NULL)
     {
@@ -62,8 +58,6 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 
 	pool->thread_count++;
 	pool->started++;
-
-	__PTHIPTH_SIGNAL_UNBLOCK();
     }
 
     return 0;
@@ -78,6 +72,7 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
     if (pool->count == pool->queue_size) return -1;
 
     __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
 
     int next = (pool->tail + 1) % pool->queue_size;
 
@@ -87,9 +82,10 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
     pool->tail = next;
     pool->count += 1;
 
-    pthipth_cond_signal(&pool->notify);
-
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
+
+    pthipth_cond_signal(&pool->notify);
 
     return 0;
 }
@@ -127,8 +123,6 @@ static void *pthipth_thread(void *arg)
     pthipth_task_t task;
     pthipth_pool_t *pool = (pthipth_pool_t *)arg;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *thread = __pthipth_selfptr();
 
     while (1)
@@ -139,12 +133,11 @@ static void *pthipth_thread(void *arg)
 	    pthipth_cond_broadcast(&pool->notify);
 	}
 
-	__PTHIPTH_SIGNAL_BLOCK();
-
 	while (pool->count == 0 && pool->shutdown != SHUTDOWN)
 	    pthipth_cond_wait_non(&pool->notify);
 
 	__PTHIPTH_SIGNAL_BLOCK();
+	futex_down(&global_futex);
 
 	if (pool->shutdown == SHUTDOWN) break;
 
@@ -162,10 +155,14 @@ static void *pthipth_thread(void *arg)
 
 	pool->task_in_progess++;
 
+	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
+
 	pthipth_yield();
 
 	(*(task.function))(task.arg);
 
+	futex_down(&global_futex);
 	__PTHIPTH_SIGNAL_BLOCK();
 
 	pool->task_in_progess--;
@@ -173,10 +170,14 @@ static void *pthipth_thread(void *arg)
 	// if task complete set prio high for recieve new task
 	thread->priority = thread->init_priority = thread->old_priority = HIGHEST_PRIORITY;
 	pthipth_prio_reinsert(thread);
+
+	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
     }
 
     pool->started--;
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
 
     return NULL;

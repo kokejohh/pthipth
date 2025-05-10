@@ -29,4 +29,6 @@ void __pthipth_check_detach(pthipth_private_t *node);
 
 void __pthipth_yield(void);
 
+void __signal_time_slice(int sig);
+
 #endif

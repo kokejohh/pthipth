@@ -5,6 +5,8 @@
 
 extern pthipth_queue_t blocked_state;
 
+extern futex_t global_futex;
+
 // pthipth_barrier_init
 // returns:
 // 0 - success
@@ -13,12 +15,8 @@ int pthipth_barrier_init(pthipth_barrier_t *barrier, int count)
 {
     if (barrier == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     barrier->count = count < 0 ? 1 : count;
     atomic_store(&barrier->waiting, 0);
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -32,9 +30,9 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
 {
     if (barrier == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *self = __pthipth_selfptr();
+
+    if (self == NULL) return -1;
 
     atomic_fetch_add(&barrier->waiting, 1);
 
@@ -42,10 +40,21 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
     if (atomic_load(&barrier->waiting) < barrier->count)
     {
 	self->current_barrier = barrier;
+
+	__PTHIPTH_SIGNAL_BLOCK();
+	futex_down(&global_futex);
+
 	__pthipth_change_to_state(self, BLOCKED);
+
+	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
+
 	pthipth_yield();
 	return 0;
     }
+
+    __PTHIPTH_SIGNAL_BLOCK();
+    futex_down(&global_futex);
 
     // wake all thread in this barrier
     pthipth_private_t *tmp = blocked_state.head;
@@ -56,9 +65,11 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
 	    __pthipth_change_to_state(tmp, READY);
 	tmp = next_tmp;
     }
-    atomic_store(&barrier->waiting, 0);
 
+    futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
+
+    atomic_store(&barrier->waiting, 0);
 
     return PTHIPTH_BARRIER_SERIAL_THREAD;
 }
@@ -71,18 +82,11 @@ int pthipth_barrier_destroy(pthipth_barrier_t *barrier)
 {
     if (barrier == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     if (atomic_load(&barrier->waiting) > 0)
-    {
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return -1;
-    }
 
     barrier->count = -1;
     atomic_store(&barrier->waiting, -1);
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

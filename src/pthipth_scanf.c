@@ -14,8 +14,6 @@ int pthipth_scanf(const char *format, ...)
 
     while (1)
     {
-	__PTHIPTH_SIGNAL_BLOCK();
-
 	FD_ZERO(&readfds);
 	FD_SET(STDIN_FILENO, &readfds);
 
@@ -38,11 +36,10 @@ int pthipth_scanf(const char *format, ...)
 
 		va_end(args);
 
-		__PTHIPTH_SIGNAL_UNBLOCK();
-
 		return ret;
 	    }
 	}
     }
+
     return 0;
 }

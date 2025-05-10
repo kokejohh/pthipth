@@ -13,7 +13,6 @@ extern futex_t global_futex;
 int pthipth_join(pthipth_t target_thread, void **status)
 {
     __PTHIPTH_SIGNAL_BLOCK();
-
     futex_down(&global_futex);
 
     pthipth_private_t *target = pthipth_avl_search(target_thread);
@@ -22,8 +21,8 @@ int pthipth_join(pthipth_t target_thread, void **status)
     if (target == NULL || self == NULL || target->blockedForJoin ||
 	    target->tid == self->tid)
     {
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return -1;
     }
 
@@ -39,14 +38,14 @@ int pthipth_join(pthipth_t target_thread, void **status)
 	if (status == NULL)
 	{
 	    __pthipth_free(target);
-	    __PTHIPTH_SIGNAL_UNBLOCK();
 	    futex_up(&global_futex);
+	    __PTHIPTH_SIGNAL_UNBLOCK();
 	    return 0;
 	}
 	*status = target->return_value;
 	__pthipth_free(target);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
 
@@ -54,9 +53,8 @@ int pthipth_join(pthipth_t target_thread, void **status)
 
     __pthipth_change_to_state(self, BLOCKED);
 
-    __PTHIPTH_SIGNAL_UNBLOCK();
-
     futex_up(&global_futex);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();
 
@@ -70,15 +68,15 @@ int pthipth_join(pthipth_t target_thread, void **status)
     if (status == NULL)
     {
 	__pthipth_free(target);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	futex_up(&global_futex);
+	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
 
     *status = target->return_value;
     __pthipth_free(target);
-    __PTHIPTH_SIGNAL_UNBLOCK();
     futex_up(&global_futex);
+    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

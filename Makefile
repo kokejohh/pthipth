@@ -64,7 +64,7 @@ libpthipth.so: $(OBJS)
 $(SRC_DIR)/%.o:$(SRC_DIR)/%.c $(INC)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
 
-$(TEST_DIR)/%:$(TEST_DIR)/%.o $(OBJS)
+$(TEST_DIR)/%:$(TEST_DIR)/%.c $(OBJS)
 	$(CC) $< -L./test -lpthipth -o $@
 
 $(DEMO_DIR)/%:$(DEMO_DIR)/%.c $(OBJS)

@@ -2,9 +2,12 @@
 
 #include <stdio.h>
 
+#include "pthipth.h"
 #include "pthipth_prio.h"
 
 pthipth_private_t *pthipth_prio_head;
+
+pthipth_private_t *pthipth_prio_table[MAIN_PRIORITY + 1] = {0}; //main is max priority
 
 void pthipth_prio_init(pthipth_private_t *node)
 {
@@ -15,6 +18,10 @@ void pthipth_prio_init(pthipth_private_t *node)
 
     node->inside_next = node;
     node->inside_prev = node;
+
+    node->cur_priority = node->priority;
+
+    pthipth_prio_table[node->priority] = node;
 }
 
 static void prio_insert_new_bucket(pthipth_private_t *node, pthipth_private_t *cur)
@@ -63,7 +70,10 @@ void pthipth_prio_insert(pthipth_private_t *node)
 	return;
     }
 
-    pthipth_private_t *cur = pthipth_prio_head;
+    node->cur_priority = node->priority;
+
+    pthipth_private_t *cur = pthipth_prio_table[node->priority];
+    if (cur == NULL) cur = pthipth_prio_head;
 
     while (cur)
     {
@@ -75,11 +85,13 @@ void pthipth_prio_insert(pthipth_private_t *node)
 	else if (node->priority < cur->priority)
 	{
 	    prio_insert_new_bucket(node, cur);
+	    pthipth_prio_table[node->priority] = node;
 	    return;
 	}
 	if (cur->next == NULL)
 	{
 	    prio_insert_last_bucket(node, cur);
+	    pthipth_prio_table[node->priority] = node;
 	    return;
 	}
 	cur = cur->next;
@@ -90,8 +102,13 @@ void pthipth_prio_insert(pthipth_private_t *node)
 pthipth_private_t *pthipth_prio_extract()
 {
     pthipth_private_t *cur = pthipth_prio_head;
+
+    if (cur == NULL)return NULL;
+
     if (cur->inside_next == cur)
     {
+	pthipth_prio_table[cur->priority] = NULL;
+
 	pthipth_prio_head = cur->next;
 	if (pthipth_prio_head == NULL)
 	    return NULL;
@@ -108,6 +125,8 @@ pthipth_private_t *pthipth_prio_extract()
 	pthipth_prio_head->prev = NULL;
 	cur->next = cur->prev = NULL;
 	cur->inside_next = cur->inside_prev = cur;
+
+	pthipth_prio_table[cur->priority] = pthipth_prio_head;
     }
 
     return cur;
@@ -128,6 +147,8 @@ void pthipth_prio_rotate()
 
     pthipth_prio_head->prev = NULL;
     cur->next = cur->prev = NULL;
+
+    pthipth_prio_table[cur->priority] = pthipth_prio_head;
 }
 
 pthipth_private_t *pthipth_prio_peek()
@@ -140,25 +161,33 @@ void pthipth_prio_delete(pthipth_private_t *node)
     node->inside_next->inside_prev = node->inside_prev;
     node->inside_prev->inside_next = node->inside_next;
 
-    // has next node
-    if (node->next)
+    if (node->next || node->prev)
     {
+	pthipth_prio_table[node->cur_priority] = (node == node->inside_next) ?
+					    NULL : node->inside_next;
+
 	node->inside_next->next = node->next;
 	node->inside_next->prev = node->prev;
+	// has next node
+	if (node->next)
+	    node->next->prev = (node == node->inside_next) ?
+				node->prev : node->inside_next;
 
-	node->next->prev = (node == node->inside_next) ?
-			    node->prev : node->inside_next;
+	// has previous node
+	if (node->prev)
+	    // link previous node next
+	    node->prev->next = (node == node->inside_next) ?
+				node->next : node->inside_next;
     }
 
-    // has previous node
-    if (node->prev)
-	// link previous node next
-	node->prev->next = (node == node->inside_next) ?
-			    node->next : node->inside_next;
-
     if (node == pthipth_prio_head)
+    {
+	pthipth_prio_table[node->cur_priority] = (pthipth_prio_head == node->inside_next) ?
+					    NULL : node->inside_next;
+
 	pthipth_prio_head = (pthipth_prio_head == node->inside_next) ?
 	    node->next : node->inside_next;
+    }
 }
 
 void pthipth_prio_reinsert(pthipth_private_t *node)
@@ -206,4 +235,16 @@ void pthipth_prio_display()
 	printf("--------------\n");
     }
     printf("end display bucket queue\n");
+
+    printf("\n");
+
+    printf("head each bucket queue\n");
+    for (int i = 1; i <= MAIN_PRIORITY; i++)
+    {
+	if (pthipth_prio_table[i])
+	{
+	    printf("tid[%d] %d, prio %d\n", i, pthipth_prio_table[i]->tid, pthipth_prio_table[i]->priority);
+	}
+    }
+    printf("end head each bucket queue\n");
 }

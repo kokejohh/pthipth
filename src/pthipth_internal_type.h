@@ -23,7 +23,7 @@ typedef struct pthipth_private {
     void *return_value;
     struct pthipth_private *blockedForJoin;
     futex_t sched_futex;
-    uint8_t priority, init_priority, old_priority;
+    int priority, init_priority, old_priority;
     uint64_t wake_time;
     uint64_t last_selected;
     int time_quota;
@@ -37,6 +37,7 @@ typedef struct pthipth_private {
     int is_detach;
     // Bucket queue and queue
     struct pthipth_private *prev, *next, *inside_prev, *inside_next;
+    int cur_priority;
     // AVL tree
     struct pthipth_private *parent, *left, *right;
     int height;

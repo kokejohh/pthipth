@@ -24,15 +24,16 @@ both of which use futex_wake to wake the thread. Calling pthipth_yield can also 
 1. pthipth_create            2.pthipth_join                 3. pthipth_detach
 4. pthipth_yield             5. pthipth_yield_qtime         6. pthipth_exit
 7. pthipth_self              8. pthipth_sleep               9. pthipth_scanf
-10. pthipth_signal_block     11. pthipth_signal_unblock     12. pthipth_set_prio
-13. pthipth_get_prio         14. pthipth_get_stack_size     15. pthipth_get_time_quota
-16. pthipth_get_aging_factor 17. pthipth_get_aging_time
-18. pthipth_barrier_init     19. pthipth_barrier_wait       20. pthipth_barrier_destroy
-21. pthipth_cond_init        22. pthipth_cond_wait          23. pthipth_cond_wait_non
-24. pthipth_cond_signal      25. pthipth_cond_broadcast     26. pthipth_cond_destroy
-27. pthipth_mutex_init       28. pthipth_mutex_lock         29. pthipth_mutex_trylock
-30. pthipth_mutex_unlock     31. pthipth_mutex_destroy
-32. pthipth_pool_create      33. pthipth_pool_add           34. pthipth_pool_destroy
+10. pthipth_signal_block     11. pthipth_signal_unblock     12. pthipth_signal_print
+13. pthipth_signal_ignore    14. pthipth_signal_restore     15. pthipth_set_prio
+16. pthipth_get_prio         17. pthipth_get_stack_size     18. pthipth_get_time_quota
+19. pthipth_get_aging_factor 20. pthipth_get_aging_time
+21. pthipth_barrier_init     22. pthipth_barrier_wait       23. pthipth_barrier_destroy
+24. pthipth_cond_init        25. pthipth_cond_wait          26. pthipth_cond_wait_non
+27. pthipth_cond_signal      28. pthipth_cond_broadcast     29. pthipth_cond_destroy
+30. pthipth_mutex_init       31. pthipth_mutex_lock         32. pthipth_mutex_trylock
+33. pthipth_mutex_unlock     34. pthipth_mutex_destroy
+35. pthipth_pool_create      36. pthipth_pool_add           37. pthipth_pool_destroy
 ```
 
 Read more [Documentation](/docs/documentation.md)

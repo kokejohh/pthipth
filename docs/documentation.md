@@ -54,6 +54,9 @@ If any condition fails, it returns -1. If the target thread is defunct, it frees
 Otherwise, it marks the thread as detached and yields the CPU.```pthipth_yield``` will handle the actual detachment process.
 
 #### pthipth_yield(void);
+triggers a SIGALRM to request a thread yield. ```__pthipth_yield~~~ is the actual yield handler:
+It locks a global futex to prevent race conditions.If there's no other thread to switch to, it unlocks and returns.
+Otherwise, it blocks itself using its sched_futex, allowing the scheduler to switch context.
 
 #### pthipth_yield_qtime(int64_t ms);
 yields the thread if it has run longer than the time quota ms specified by this function; if ms <= 0, it yields immediately.

@@ -14,6 +14,8 @@
 #include "pthipth_avl.h"
 #include "pthipth_signal.h"
 
+extern __thread pthipth_private_t *cur_pthipth;
+
 extern pthipth_private_t *pthipth_prio_head;
 
 extern futex_t global_futex;
@@ -25,6 +27,8 @@ static int __pthipth_add_main_tcb()
     pthipth_private_t *main_tcb = (pthipth_private_t *)malloc(sizeof(pthipth_private_t));
 
     if (main_tcb == NULL) return -1;
+
+    cur_pthipth = main_tcb;
 
     main_tcb->start_func = NULL;
     main_tcb->arg = NULL;

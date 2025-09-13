@@ -2,11 +2,15 @@
 #include "pthipth_internal.h"
 #include "pthipth_signal.h"
 
+__thread pthipth_private_t *cur_pthipth;
+
 int __pthipth_wrapper(void *thread_tcb)
 {
     pthipth_private_t *new_tcb = (pthipth_private_t *)thread_tcb;
 
     futex_down(&new_tcb->sched_futex);
+
+    cur_pthipth = new_tcb;
 
     __pthipth_set_thread_time_quota(new_tcb->time_quota);
 

@@ -74,8 +74,7 @@ int main(int argc, char *argv[]){
 	      printf("Shutdown writing to TCP connection\n");
 	      shutdown(conn_fd, SHUT_WR);
 	      client_shutdown_flag = 1;
-	    }
-	    else{
+	    } else{
               n = write_full(conn_fd, line, MAXLINE);
 	    }
 	  }
@@ -86,13 +85,11 @@ int main(int argc, char *argv[]){
 	        printf("TCP connection closed after client shutdown\n");
 	        close(conn_fd);
 	        break;
-	      }
-	      else{
+	      } else{
 	        printf("Error: TCP connection closed unexpectedly\n");
 	        exit(1);
 	      }
-	    }
-	    else{
+	    } else{
               fputs(line, stdout);
 	    }
 	  }

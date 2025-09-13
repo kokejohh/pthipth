@@ -11,7 +11,7 @@
 #include <sys/types.h>
 
 #define HIGHEST_PRIORITY 1
-#define DEFAULT_PRIORITY 28
+#define DEFAULT_PRIORITY 20
 #define LOWEST_PRIORITY 29
 #define IDLE_PRIORITY 30
 #define MAIN_PRIORITY 30

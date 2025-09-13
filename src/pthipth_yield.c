@@ -6,6 +6,8 @@
 #include "pthipth_queue.h"
 #include "pthipth_signal.h"
 
+extern __thread pthipth_private_t *cur_pthipth;
+
 futex_t global_futex;
 
 pthipth_private_t *__pthipth_scheduler(pthipth_private_t *cur)
@@ -37,6 +39,8 @@ int __pthipth_dispatcher(pthipth_private_t *node)
     __pthipth_change_to_state(tmp, RUNNING);
 
     if (tmp == node) return -1;
+
+    cur_pthipth = tmp;
 
     futex_up(&tmp->sched_futex);
 

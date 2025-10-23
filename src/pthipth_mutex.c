@@ -20,7 +20,7 @@ pthipth_t init_owner_tid = 0;
 // -1 - error
 int pthipth_mutex_init(pthipth_mutex_t *mutex)
 {
-    if (mutex == NULL) return -1;
+    if (mutex == NULL || mutex->futx != NULL) return -1;
 
     mutex->futx = malloc(sizeof(futex_t));
     if (mutex->futx == NULL) return -1;
@@ -79,7 +79,6 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	__PTHIPTH_SIGNAL_UNBLOCK();
 
 	pthipth_yield();
-
     }
 
     mutex->owner_tid = __pthipth_gettid();
@@ -138,7 +137,9 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 	pthipth_prio_reinsert(owner);
 
     // set default mutex value
-    pthipth_mutex_init(mutex);
+    mutex->owner_tid = init_owner_tid;
+    // set mutex is available
+    futex_init(mutex->futx, 1);
 
     futex_up(&global_futex);
     __PTHIPTH_SIGNAL_UNBLOCK();
@@ -151,7 +152,6 @@ int pthipth_mutex_destroy(pthipth_mutex_t *mutex)
     if (mutex == NULL) return -1;
 
     free(mutex->futx);
-
     mutex->futx = NULL;
 
     return 0;

@@ -6,7 +6,6 @@
 #include "pthipth_avl.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
-#include "pthipth_signal.h"
 
 extern pthipth_queue_t blocked_state;
 
@@ -49,7 +48,6 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
     // another thread owns the mutex: priority inheritance
     else if (mutex->owner_tid != 0)
     {
-	__PTHIPTH_SIGNAL_BLOCK();
 	futex_down(&global_futex);
 
 	pthipth_private_t *owner_tid = pthipth_avl_search(mutex->owner_tid);
@@ -63,20 +61,17 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 	    pthipth_prio_reinsert(owner_tid);
 
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
     }
 
     while (__futex_down(&mutex->futx->count) != 0)
     {
 	self->current_mutex = mutex;
 
-	__PTHIPTH_SIGNAL_BLOCK();
 	futex_down(&global_futex);
 
 	__pthipth_change_to_state(self, BLOCKED);
 
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 
 	pthipth_yield();
     }
@@ -108,7 +103,6 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     else if (mutex->owner_tid == 0) return 0; // not any lock
     else if (mutex->owner_tid != __pthipth_gettid()) return -1; //not owner unlock
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *tmp = blocked_state.head;
@@ -142,7 +136,6 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     futex_init(mutex->futx, 1);
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

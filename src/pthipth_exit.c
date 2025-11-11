@@ -3,7 +3,6 @@
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_signal.h"
 #include "pthipth_queue.h"
 
 extern futex_t global_futex;
@@ -22,7 +21,6 @@ __attribute__ ((noreturn))
 void pthipth_exit(void *return_val)
 {
     // sync 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *self = __pthipth_selfptr();

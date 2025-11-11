@@ -4,7 +4,6 @@
 #include "pthipth_internal.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
-#include "pthipth_signal.h"
 
 extern __thread pthipth_private_t *cur_pthipth;
 
@@ -47,13 +46,13 @@ int __pthipth_dispatcher(pthipth_private_t *node)
     return 0;
 }
 
-void __pthipth_yield()
+void pthipth_yield()
 {
     // prevent race condition while yield
     futex_down(&global_futex);
 
     pthipth_private_t *self = __pthipth_selfptr();
-    
+
     // only one thread
     if (__pthipth_dispatcher(self) == -1)
     {
@@ -70,11 +69,6 @@ void __pthipth_yield()
     __pthipth_set_thread_time_quota(self->time_quota);
 }
 
-void pthipth_yield()
-{
-    raise(SIGALRM);
-}
-
 // pthipth_yield_qtime:
 // yield if thread runs longer than time quota (ms),
 // ms < 0: yield immediately
@@ -86,13 +80,9 @@ void pthipth_yield_qtime(int64_t ms)
 	return;
     }
 
-    __PTHIPTH_SIGNAL_BLOCK();
-
     pthipth_private_t *self = __pthipth_selfptr();
     uint64_t current_time = __pthipth_gettime_ms();
     int64_t waiting_time = current_time - self->last_selected;
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     if (waiting_time >= ms)
 	pthipth_yield();

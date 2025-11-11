@@ -1,11 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
-#include "pthipth_signal.h"
 
 #define MIN_THREAD_COUNT 1
 #define MAX_THREAD_COUNT 9999
@@ -54,7 +52,6 @@ int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_c
 
 	    return -1;
 	}
-	__PTHIPTH_SIGNAL_BLOCK();
 
 	pool->thread_count++;
 	pool->started++;
@@ -71,7 +68,6 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 
     if (pool->count == pool->queue_size) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     int next = (pool->tail + 1) % pool->queue_size;
@@ -83,7 +79,6 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
     pool->count += 1;
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_cond_signal(&pool->notify);
 
@@ -136,7 +131,6 @@ static void *pthipth_thread(void *arg)
 	while (pool->count == 0 && pool->shutdown != SHUTDOWN)
 	    pthipth_cond_wait_non(&pool->notify);
 
-	__PTHIPTH_SIGNAL_BLOCK();
 	futex_down(&global_futex);
 
 	if (pool->shutdown == SHUTDOWN) break;
@@ -156,14 +150,12 @@ static void *pthipth_thread(void *arg)
 	pool->task_in_progess++;
 
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 
 	pthipth_yield();
 
 	(*(task.function))(task.arg);
 
 	futex_down(&global_futex);
-	__PTHIPTH_SIGNAL_BLOCK();
 
 	pool->task_in_progess--;
 
@@ -172,13 +164,11 @@ static void *pthipth_thread(void *arg)
 	pthipth_prio_reinsert(thread);
 
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
     }
 
     pool->started--;
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return NULL;
 }

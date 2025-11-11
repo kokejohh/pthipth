@@ -3,7 +3,6 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"
-#include "pthipth_signal.h"
 
 extern futex_t global_futex;
 // pthipth_join:
@@ -12,7 +11,6 @@ extern futex_t global_futex;
 // -1 - error (already join)
 int pthipth_join(pthipth_t target_thread, void **status)
 {
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *target = pthipth_avl_search(target_thread);
@@ -22,7 +20,6 @@ int pthipth_join(pthipth_t target_thread, void **status)
 	    target->tid == self->tid)
     {
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return -1;
     }
 
@@ -39,13 +36,11 @@ int pthipth_join(pthipth_t target_thread, void **status)
 	{
 	    __pthipth_free(target);
 	    futex_up(&global_futex);
-	    __PTHIPTH_SIGNAL_UNBLOCK();
 	    return 0;
 	}
 	*status = target->return_value;
 	__pthipth_free(target);
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
 
@@ -54,11 +49,9 @@ int pthipth_join(pthipth_t target_thread, void **status)
     __pthipth_change_to_state(self, BLOCKED);
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();
 
-    __PTHIPTH_SIGNAL_BLOCK();
 
     while (target->tid_watch != 0)
 	sched_yield();
@@ -69,14 +62,12 @@ int pthipth_join(pthipth_t target_thread, void **status)
     {
 	__pthipth_free(target);
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
 
     *status = target->return_value;
     __pthipth_free(target);
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

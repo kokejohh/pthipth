@@ -32,7 +32,6 @@ void __pthipth_check_detach(pthipth_private_t *node)
 
 int pthipth_detach(pthipth_t target_thread)
 {
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *target = pthipth_avl_search(target_thread);
@@ -40,7 +39,6 @@ int pthipth_detach(pthipth_t target_thread)
     if (target == NULL || target->is_detach || target->blockedForJoin)
     {
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return -1;
     }
 
@@ -53,14 +51,12 @@ int pthipth_detach(pthipth_t target_thread)
 
 	__pthipth_free(target);
 
-	__PTHIPTH_SIGNAL_UNBLOCK();
 	return 0;
     }
 
     target->is_detach = 1;
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }

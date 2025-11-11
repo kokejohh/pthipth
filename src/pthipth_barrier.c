@@ -1,7 +1,6 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_queue.h"
-#include "pthipth_signal.h"
 
 extern pthipth_queue_t blocked_state;
 
@@ -41,19 +40,16 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
     {
 	self->current_barrier = barrier;
 
-	__PTHIPTH_SIGNAL_BLOCK();
 	futex_down(&global_futex);
 
 	__pthipth_change_to_state(self, BLOCKED);
 
 	futex_up(&global_futex);
-	__PTHIPTH_SIGNAL_UNBLOCK();
 
 	pthipth_yield();
 	return 0;
     }
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     // wake all thread in this barrier
@@ -67,7 +63,6 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
     }
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     atomic_store(&barrier->waiting, 0);
 

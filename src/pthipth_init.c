@@ -39,24 +39,28 @@ static int __pthipth_add_main_tcb()
 
 int pthipth_init()
 {
-    if (__g_pthipth_init && __g_pthipth_idle) return 0;
+    if (__g_pthipth_init == 0)
+    {
+	// add main thread
+	int ret = __pthipth_add_main_tcb();
+	if (ret != 0) return ret;
 
-    // add main thread
-    int ret = __pthipth_add_main_tcb();
-    if (ret != 0) return ret;
+	__g_pthipth_init = 1;
 
-    __g_pthipth_init = 1;
+	futex_init(&global_futex, 1);
+    }
 
-    futex_init(&global_futex, 1);
+    if (__g_pthipth_idle == 0)
+    {
+	pthipth_t idle_u_tcb;
+	pthipth_task_t task_idle = { .function = __pthipth_idle, .arg = NULL, .priority = IDLE_PRIORITY };
 
-    pthipth_t idle_u_tcb;
-    pthipth_task_t task_idle = { .function = __pthipth_idle, .arg = NULL, .priority = IDLE_PRIORITY };
+	int ret_idle = pthipth_create(&idle_u_tcb, NULL, &task_idle);
 
-    int ret_idle = pthipth_create(&idle_u_tcb, NULL, &task_idle);
+	if (ret_idle) return ret_idle;
 
-    if (ret_idle) return ret_idle;
-
-    __g_pthipth_idle = 1;
+	__g_pthipth_idle = 1;
+    }
 
     return 0;
 }

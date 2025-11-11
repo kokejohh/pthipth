@@ -4,6 +4,8 @@
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"
 
+extern int __g_pthipth_init;
+
 extern futex_t global_futex;
 // pthipth_join:
 // returns:
@@ -11,6 +13,8 @@ extern futex_t global_futex;
 // -1 - error (already join)
 int pthipth_join(pthipth_t target_thread, void **status)
 {
+    if (__g_pthipth_init == 0) return -1;
+
     futex_down(&global_futex);
 
     pthipth_private_t *target = pthipth_avl_search(target_thread);

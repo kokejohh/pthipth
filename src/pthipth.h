@@ -71,6 +71,9 @@ typedef struct pthipth_pool {
     int started;
 } pthipth_pool_t;
 
+// init
+int pthipth_init();
+
 // create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);
 

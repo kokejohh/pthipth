@@ -6,9 +6,7 @@
 #include "pthipth_queue.h"
 
 #define MIN_THREAD_COUNT 1
-#define MAX_THREAD_COUNT 9999
 #define MIN_QUEUE_SIZE 1
-#define MAX_QUEUE_SIZE 9999
 #define SHUTDOWN 1
 
 extern pthipth_private_t *pthipth_prio_head;
@@ -22,9 +20,7 @@ static void *pthipth_thread(void *arg);
 
 int pthipth_pool_create(pthipth_pool_t *pool, pthipth_attr_t *attr, int thread_count, int queue_size)
 {
-    if (thread_count < MIN_THREAD_COUNT || thread_count > MAX_THREAD_COUNT ||
-	    queue_size < MIN_QUEUE_SIZE || queue_size > MAX_QUEUE_SIZE ||
-	    pool == NULL)
+    if (thread_count < MIN_THREAD_COUNT || queue_size < MIN_QUEUE_SIZE || pool == NULL)
 	return -1;
 
     // initialize
@@ -82,6 +78,9 @@ int pthipth_pool_add(pthipth_pool_t *pool, pthipth_task_t *task)
 
     pthipth_cond_signal(&pool->notify);
 
+    if (pool->count == pool->thread_count)
+	pthipth_yield();
+
     return 0;
 }
 
@@ -91,6 +90,14 @@ int pthipth_pool_destroy(pthipth_pool_t *pool)
 	return -1;
 
     if (pool->shutdown == SHUTDOWN) return -1;
+
+    while (pool->count > 0) {
+	pthipth_yield();
+    }
+
+    pool->shutdown = SHUTDOWN;
+
+    pthipth_cond_broadcast(&pool->notify);
 
     for (int i = 0; i < pool->thread_count; i++)
 	pthipth_join(pool->threads[i], NULL);
@@ -122,12 +129,6 @@ static void *pthipth_thread(void *arg)
 
     while (1)
     {
-	if (pool->task_in_progess == 0 && pool->count == 0)
-	{
-	    pool->shutdown = SHUTDOWN;
-	    pthipth_cond_broadcast(&pool->notify);
-	}
-
 	while (pool->count == 0 && pool->shutdown != SHUTDOWN)
 	    pthipth_cond_wait_non(&pool->notify);
 

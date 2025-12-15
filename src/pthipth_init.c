@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
@@ -23,12 +24,14 @@ static int __pthipth_add_main_tcb()
 
     cur_pthipth = main_tcb;
 
-    main_tcb->state = READY;
-    main_tcb->tid = __pthipth_gettid();
+    main_tcb->state = RUNNING;
+    main_tcb->tid = main_tcb->tid_watch = __pthipth_gettid();
     main_tcb->priority = main_tcb->init_priority = main_tcb->old_priority = MAIN_PRIORITY;
     main_tcb->last_selected = __pthipth_gettime_ms();
     main_tcb->aging_time = 1;
+    main_tcb->mutex_count = 0;
 
+    syscall(SYS_set_tid_address, &main_tcb->tid_watch);
     futex_init(&main_tcb->sched_futex, 1);
 
     pthipth_prio_insert(main_tcb);

@@ -60,7 +60,7 @@ int main()
 	    elapsed = (end.tv_sec - start.tv_sec) * 1e3 +
 		(end.tv_nsec - start.tv_nsec) / 1e6;
 
-	    printf("pthread elapsed time: %.4f ms, avg: %.4f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num1);
+	    printf("pthread elapsed time: %.5f ms, avg: %.5f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num1);
 	}
 
 	num2 = 0;
@@ -81,7 +81,7 @@ int main()
 	    elapsed = (end.tv_sec - start.tv_sec) * 1e3 +
 		(end.tv_nsec - start.tv_nsec) / 1e6;
 
-	    printf("pthipth elapsed time: %.4f ms, avg: %.4f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num2);
+	    printf("pthipth elapsed time: %.5f ms, avg: %.5f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num2);
 	}
 
 	num2 = 0;
@@ -89,7 +89,7 @@ int main()
 	{
 	    clock_gettime(CLOCK_MONOTONIC, &start);
 
-	    pthipth_pool_create(&pool, NULL, 1, 9000);
+	    pthipth_pool_create(&pool, NULL, 10, 9000);
 
 	    for (int i = 0; i < numOfthreads[k]; i++)
 		pthipth_pool_add(&pool, &(pthipth_task_t){child_function2, NULL, DEFAULT_PRIORITY});
@@ -101,7 +101,7 @@ int main()
 	    elapsed = (end.tv_sec - start.tv_sec) * 1e3 +
 		(end.tv_nsec - start.tv_nsec) / 1e6;
 
-	    printf("pool elapsed time: %.4f ms, avg: %.4f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num2);
+	    printf("pool elapsed time: %.5f ms, avg: %.5f, ans: %d\n", elapsed, elapsed / numOfthreads[k], num2);
 	}
 	printf("\n");
     }

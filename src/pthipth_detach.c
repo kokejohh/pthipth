@@ -42,6 +42,8 @@ int pthipth_detach(pthipth_t target_thread)
 	return -1;
     }
 
+    target->is_detach = 1;
+
     if (target->state == DEFUNCT)
     {
 	futex_up(&global_futex);
@@ -53,8 +55,6 @@ int pthipth_detach(pthipth_t target_thread)
 
 	return 0;
     }
-
-    target->is_detach = 1;
 
     futex_up(&global_futex);
 

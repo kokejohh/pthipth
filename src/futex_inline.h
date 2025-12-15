@@ -12,12 +12,10 @@
 // negative number - other cases.
 static inline int __futex_down(atomic_int *counter)
 {
-    int value;
+    int value = atomic_load(counter);
 
     do
     {
-	value = atomic_load(counter);
-
 	if (value < 0) return value;
     } while (!atomic_compare_exchange_weak(counter, &value, value - 1));
 

@@ -3,7 +3,6 @@
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
 #include "pthipth_avl.h"
-#include "pthipth_signal.h"
 
 extern pthipth_queue_t sleeping_state;
 
@@ -15,7 +14,6 @@ void pthipth_sleep(int64_t millisec)
 
     pthipth_private_t *self = __pthipth_selfptr();
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     self->wake_time = __pthipth_gettime_ms() + millisec;
@@ -23,7 +21,6 @@ void pthipth_sleep(int64_t millisec)
     __pthipth_change_to_state(self, SLEEPING);
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();
 }

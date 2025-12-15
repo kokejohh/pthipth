@@ -1,6 +1,5 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_signal.h"
 
 __thread pthipth_private_t *cur_pthipth;
 
@@ -13,8 +12,6 @@ int __pthipth_wrapper(void *thread_tcb)
     cur_pthipth = new_tcb;
 
     __pthipth_set_thread_time_quota(new_tcb->time_quota);
-
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     void *return_val = NULL;
 

@@ -13,7 +13,7 @@
 #define HIGHEST_PRIORITY 1
 #define DEFAULT_PRIORITY 20
 #define LOWEST_PRIORITY 29
-#define IDLE_PRIORITY 30
+#define IDLE_PRIORITY 31
 #define MAIN_PRIORITY 30
 
 #define PTHIPTH_BARRIER_SERIAL_THREAD 1
@@ -70,6 +70,9 @@ typedef struct pthipth_pool {
     int task_in_progess;
     int started;
 } pthipth_pool_t;
+
+// init
+int pthipth_init();
 
 // create
 int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_t *task);

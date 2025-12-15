@@ -2,7 +2,6 @@
 #include "pthipth_internal.h"
 #include "pthipth_internal_type.h"
 #include "pthipth_queue.h"
-#include "pthipth_signal.h"
 
 extern pthipth_queue_t blocked_state;
 
@@ -27,7 +26,6 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *tmp = blocked_state.head;
@@ -39,18 +37,19 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond &&
 		(selected == NULL || tmp->priority < selected->priority))
+	{
 	    selected = tmp;
+	    break;
+	}
 	tmp = next_tmp;
     }
     if (selected)
     {
-	selected->current_mutex = NULL;
 	selected->current_cond = NULL;
 	__pthipth_change_to_state(selected, READY);
     }
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -63,7 +62,6 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 {
     if (cond == NULL) return -1;
 
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     pthipth_private_t *tmp = blocked_state.head;
@@ -74,7 +72,6 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond)
 	{
-	    tmp->current_mutex = NULL;
 	    tmp->current_cond = NULL;
 	    __pthipth_change_to_state(tmp, READY);
 	}
@@ -82,7 +79,6 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
     }
 
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     return 0;
 }
@@ -95,17 +91,14 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 {
     if (cond == NULL || mutex == NULL) return -1;
 
+    futex_down(&global_futex);
+
     pthipth_private_t *self = __pthipth_selfptr();
 
     self->current_cond = cond;
 
-    __PTHIPTH_SIGNAL_BLOCK();
-    futex_down(&global_futex);
-
     __pthipth_change_to_state(self, BLOCKED);
-
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_mutex_unlock(mutex);
 
@@ -127,15 +120,13 @@ int pthipth_cond_wait_non(pthipth_cond_t *cond)
 
     pthipth_private_t *self = __pthipth_selfptr();
 
-    self->current_cond = cond;
-
-    __PTHIPTH_SIGNAL_BLOCK();
     futex_down(&global_futex);
 
     __pthipth_change_to_state(self, BLOCKED);
 
+    self->current_cond = cond;
+
     futex_up(&global_futex);
-    __PTHIPTH_SIGNAL_UNBLOCK();
 
     pthipth_yield();
 

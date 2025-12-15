@@ -10,9 +10,11 @@ void *child_function(void *arg)
 
 int main()
 {
+    pthipth_init();
+
     pthipth_pool_t pool;
 
-    pthipth_pool_create(&pool, NULL, 10, 20);
+    pthipth_pool_create(&pool, NULL, 10, 50);
 
     for (int i = 0; i < 20; i++)
     {

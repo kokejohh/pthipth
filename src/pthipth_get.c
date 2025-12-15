@@ -1,5 +1,4 @@
 #include "pthipth_internal.h"
-#include "pthipth_signal.h"
 
 extern __thread pthipth_private_t *cur_pthipth;
 
@@ -10,7 +9,7 @@ int pthipth_get_prio()
     return cur_pthipth ? cur_pthipth->priority : - 1;
 }
 
-uint64_t pthipth_get_stack_size()
+int pthipth_get_stack_size()
 {
     return cur_pthipth ? cur_pthipth->stack_size : 0;
 }

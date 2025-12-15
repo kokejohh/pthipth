@@ -37,12 +37,14 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond &&
 		(selected == NULL || tmp->priority < selected->priority))
+	{
 	    selected = tmp;
+	    break;
+	}
 	tmp = next_tmp;
     }
     if (selected)
     {
-	selected->current_mutex = NULL;
 	selected->current_cond = NULL;
 	__pthipth_change_to_state(selected, READY);
     }
@@ -70,7 +72,6 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond)
 	{
-	    tmp->current_mutex = NULL;
 	    tmp->current_cond = NULL;
 	    __pthipth_change_to_state(tmp, READY);
 	}
@@ -90,14 +91,13 @@ int pthipth_cond_wait(pthipth_cond_t *cond, pthipth_mutex_t *mutex)
 {
     if (cond == NULL || mutex == NULL) return -1;
 
+    futex_down(&global_futex);
+
     pthipth_private_t *self = __pthipth_selfptr();
 
     self->current_cond = cond;
 
-    futex_down(&global_futex);
-
     __pthipth_change_to_state(self, BLOCKED);
-
     futex_up(&global_futex);
 
     pthipth_mutex_unlock(mutex);
@@ -120,11 +120,11 @@ int pthipth_cond_wait_non(pthipth_cond_t *cond)
 
     pthipth_private_t *self = __pthipth_selfptr();
 
-    self->current_cond = cond;
-
     futex_down(&global_futex);
 
     __pthipth_change_to_state(self, BLOCKED);
+
+    self->current_cond = cond;
 
     futex_up(&global_futex);
 

@@ -19,6 +19,7 @@ void *child_function(void *arg)
 
 int main()
 {
+    pthipth_init();
     pthipth_barrier_init(&barrier, 5);
 
     int n = 10;

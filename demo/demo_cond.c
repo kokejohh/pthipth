@@ -38,6 +38,8 @@ void *child_function2(void *arg)
 
 int main()
 {
+    pthipth_init();
+
     pthipth_mutex_init(&mutex);
     pthipth_cond_init(&cond);
 

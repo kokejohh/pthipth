@@ -16,7 +16,8 @@ void *child_function(void *arg)
 
 int main()
 {
-    int n = 10;
+    pthipth_init();
+    int n = 5;
 
     pthipth_t threads[n];
 

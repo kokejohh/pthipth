@@ -24,9 +24,10 @@ void *child_function(void *arg)
 
 int main()
 {
+    pthipth_init();
     pthipth_mutex_init(&mutex);
 
-    int n = 10;
+    int n = 5;
 
     pthipth_t threads[n];
 

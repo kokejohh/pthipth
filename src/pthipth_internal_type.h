@@ -10,7 +10,7 @@ typedef struct pthipth_cond pthipth_cond_t;
 typedef struct pthipth_mutex pthipth_mutex_t;
 
 typedef enum pthipth_state {
-    RUNNING, READY, BLOCKED, SLEEPING, DEFUNCT
+    READY, RUNNING, BLOCKED, SLEEPING, DEFUNCT
 } pthipth_state_t;
 
 // pthipth_private_t
@@ -29,7 +29,7 @@ typedef struct pthipth_private {
     int time_quota;
     int aging_factor;
     int aging_time;
-    pthipth_mutex_t *current_mutex;
+    int mutex_count;
     pthipth_cond_t *current_cond;
     pthipth_barrier_t *current_barrier;
     char *child_stack;

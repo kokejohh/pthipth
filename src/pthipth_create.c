@@ -40,7 +40,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     else if (__g_pthipth_idle && task->priority > LOWEST_PRIORITY) priority = LOWEST_PRIORITY;
 
     char *child_stack = mmap(NULL, stack_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
-    if (child_stack == NULL)
+    if (child_stack == MAP_FAILED)
     {
 	free(new_node);
 	return -1;
@@ -56,6 +56,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     new_node->aging_factor = aging_factor;
     new_node->aging_time = aging_time;
     new_node->stack_size = stack_size;
+    new_node->mutex_count = 0;
 
     futex_init(&new_node->sched_futex, 0);
 
@@ -69,14 +70,6 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
     }
     *new_thread_ID = new_node->tid = tid;
 
-    /*
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(0, &cpuset);
-
-    sched_setaffinity(tid, sizeof(cpu_set_t), &cpuset);
-    */
-
     futex_down(&global_futex);
 
     pthipth_prio_insert(new_node);
@@ -86,4 +79,3 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 
     return 0;
 }
-

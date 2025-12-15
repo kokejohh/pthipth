@@ -21,7 +21,7 @@ int pthipth_join(pthipth_t target_thread, void **status)
     pthipth_private_t *self = __pthipth_selfptr();
 
     if (target == NULL || self == NULL || target->blockedForJoin ||
-	    target->tid == self->tid)
+	    target->tid == self->tid || target->is_detach)
     {
 	futex_up(&global_futex);
 	return -1;
@@ -55,7 +55,6 @@ int pthipth_join(pthipth_t target_thread, void **status)
     futex_up(&global_futex);
 
     pthipth_yield();
-
 
     while (target->tid_watch != 0)
 	sched_yield();

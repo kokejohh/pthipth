@@ -7,7 +7,7 @@
 
 pthipth_private_t *pthipth_prio_head;
 
-pthipth_private_t *pthipth_prio_table[MAIN_PRIORITY + 1] = {0}; //main is max priority
+pthipth_private_t *pthipth_prio_table[IDLE_PRIORITY + 1] = {0}; //idle is largest value.
 
 void pthipth_prio_init(pthipth_private_t *node)
 {
@@ -21,7 +21,7 @@ void pthipth_prio_init(pthipth_private_t *node)
 
     node->cur_priority = node->priority;
 
-    pthipth_prio_table[node->priority] = node;
+    pthipth_prio_table[node->cur_priority] = node;
 }
 
 static void prio_insert_new_bucket(pthipth_private_t *node, pthipth_private_t *cur)
@@ -72,7 +72,7 @@ void pthipth_prio_insert(pthipth_private_t *node)
 
     node->cur_priority = node->priority;
 
-    pthipth_private_t *cur = pthipth_prio_table[node->priority];
+    pthipth_private_t *cur = pthipth_prio_table[node->cur_priority];
     if (cur == NULL) cur = pthipth_prio_head;
 
     while (cur)
@@ -158,6 +158,8 @@ pthipth_private_t *pthipth_prio_peek()
 
 void pthipth_prio_delete(pthipth_private_t *node)
 {
+    if (node->cur_priority == -1) return;
+
     node->inside_next->inside_prev = node->inside_prev;
     node->inside_prev->inside_next = node->inside_next;
 
@@ -188,6 +190,7 @@ void pthipth_prio_delete(pthipth_private_t *node)
 	pthipth_prio_head = (pthipth_prio_head == node->inside_next) ?
 	    node->next : node->inside_next;
     }
+    node->cur_priority = -1;
 }
 
 void pthipth_prio_reinsert(pthipth_private_t *node)
@@ -239,7 +242,7 @@ void pthipth_prio_display()
     printf("\n");
 
     printf("head each bucket queue\n");
-    for (int i = 1; i <= MAIN_PRIORITY; i++)
+    for (int i = 0; i <= IDLE_PRIORITY; i++)
     {
 	if (pthipth_prio_table[i])
 	{

@@ -2,7 +2,7 @@
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_queue.h"
 
 #define MIN_THREAD_COUNT 1
@@ -145,7 +145,7 @@ static void *pthipth_thread(void *arg)
 	pool->count -= 1;
 
 	thread->priority = thread->init_priority = thread->old_priority = task.priority;
-	pthipth_prio_reinsert(thread);
+	pthipth_bq_reinsert(thread);
 
 	pool->task_in_progess++;
 
@@ -161,7 +161,7 @@ static void *pthipth_thread(void *arg)
 
 	// if task complete set prio high for recieve new task
 	thread->priority = thread->init_priority = thread->old_priority = HIGHEST_PRIORITY;
-	pthipth_prio_reinsert(thread);
+	pthipth_bq_reinsert(thread);
 
 	futex_up(&global_futex);
     }

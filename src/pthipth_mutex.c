@@ -4,7 +4,7 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
 #include "pthipth_avl.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_queue.h"
 
 extern futex_t global_futex;
@@ -52,7 +52,7 @@ int pthipth_mutex_lock(pthipth_mutex_t *mutex)
 
     // special HIGHEST_PRIORITY for mutex.
     self->priority = HIGHEST_PRIORITY - 1;
-    pthipth_prio_reinsert(self);
+    pthipth_bq_reinsert(self);
 
     mutex->owner_tid = __pthipth_gettid();
 
@@ -106,7 +106,7 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
     if (owner->mutex_count == 0 && (owner->state == READY || owner->state == RUNNING))
     {
 	owner->priority = owner->old_priority;
-	pthipth_prio_reinsert(owner);
+	pthipth_bq_reinsert(owner);
     }
 
     // set default mutex value

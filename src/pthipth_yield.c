@@ -2,7 +2,7 @@
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_queue.h"
 
 extern __thread pthipth_private_t *cur_pthipth;
@@ -11,9 +11,9 @@ futex_t global_futex;
 
 pthipth_private_t *__pthipth_scheduler(pthipth_private_t *cur)
 {
-    pthipth_private_t *next = pthipth_prio_peek();
-    pthipth_prio_rotate();
-    if (cur == next) next = pthipth_prio_peek();
+    pthipth_private_t *next = pthipth_bq_peek();
+    pthipth_bq_rotate();
+    if (cur == next) next = pthipth_bq_peek();
     return next;
 }
 

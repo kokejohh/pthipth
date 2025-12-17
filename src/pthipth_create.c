@@ -10,7 +10,7 @@
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_avl.h"
 
 extern int __g_pthipth_init;
@@ -70,7 +70,7 @@ int pthipth_create(pthipth_t *new_thread_ID, pthipth_attr_t *attr, pthipth_task_
 
     futex_down(&global_futex);
 
-    pthipth_prio_insert(new_node);
+    pthipth_bq_insert(new_node);
     pthipth_avl_insert(new_node);
 
     futex_up(&global_futex);

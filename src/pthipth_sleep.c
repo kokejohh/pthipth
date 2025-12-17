@@ -1,6 +1,5 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
 #include "pthipth_queue.h"
 #include "pthipth_avl.h"
 

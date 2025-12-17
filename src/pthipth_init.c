@@ -4,7 +4,7 @@
 
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_avl.h"
 
 extern __thread pthipth_private_t *cur_pthipth;
@@ -32,7 +32,7 @@ static int __pthipth_add_main_tcb()
     syscall(SYS_set_tid_address, &main_tcb->tid_watch);
     futex_init(&main_tcb->sched_futex, 1);
 
-    pthipth_prio_insert(main_tcb);
+    pthipth_bq_insert(main_tcb);
     pthipth_avl_insert(main_tcb);
 
     return 0;

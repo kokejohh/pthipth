@@ -1,5 +1,5 @@
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 
 extern futex_t global_futex;
 
@@ -13,7 +13,7 @@ int pthipth_set_prio(int new_priority)
 
     self->priority = self->old_priority = new_priority;
 
-    pthipth_prio_reinsert(self);
+    pthipth_bq_reinsert(self);
 
     futex_up(&global_futex);
 

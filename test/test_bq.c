@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_internal_type.h"
 
 int main()
@@ -15,25 +15,25 @@ int main()
     }
 
     for (int i = 0; i < n; i++)
-	pthipth_prio_insert(&t[i]);
+	pthipth_bq_insert(&t[i]);
 
-    pthipth_prio_display();
+    pthipth_bq_display();
     printf("\n");
 
-    pthipth_private_t *tmp = pthipth_prio_search(3);
+    pthipth_private_t *tmp = pthipth_bq_search(3);
     assert(tmp->tid == 3);
 
-    pthipth_prio_rotate();
-    tmp = pthipth_prio_peek();
+    pthipth_bq_rotate();
+    tmp = pthipth_bq_peek();
     assert(tmp->tid == 6);
 
     for (int i = 0; i < n; i++)
-	pthipth_prio_delete(&t[i]);
+	pthipth_bq_delete(&t[i]);
 
-    pthipth_prio_display();
+    pthipth_bq_display();
     printf("\n");
 
-    tmp = pthipth_prio_search(3);
+    tmp = pthipth_bq_search(3);
 
     assert(tmp == NULL);
 

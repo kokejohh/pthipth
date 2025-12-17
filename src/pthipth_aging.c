@@ -1,13 +1,13 @@
 #include "pthipth.h"
 #include "pthipth_internal.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 
-extern pthipth_private_t *pthipth_prio_table[IDLE_PRIORITY + 1];
-extern pthipth_private_t *pthipth_prio_head;
+extern pthipth_private_t *pthipth_bq_table[IDLE_PRIORITY + 1];
+extern pthipth_private_t *pthipth_bq_head;
 
 void __pthipth_aging()
 {
-    pthipth_private_t *tmp = pthipth_prio_head;
+    pthipth_private_t *tmp = pthipth_bq_head;
 
     if (tmp == NULL) return;
 
@@ -15,7 +15,7 @@ void __pthipth_aging()
 
     for (int i = tmp->cur_priority; i <= IDLE_PRIORITY; i++)
     {
-	pthipth_private_t *head = pthipth_prio_table[i];
+	pthipth_private_t *head = pthipth_bq_table[i];
 	pthipth_private_t *cur = head;
 	if (cur == NULL ||
 		cur->init_priority == MAIN_PRIORITY ||
@@ -53,7 +53,7 @@ void __pthipth_aging()
 		if (cur == head) head = cur->next;
 
 		cur->priority = priority;
-		pthipth_prio_reinsert(cur);
+		pthipth_bq_reinsert(cur);
 
 		if (old_head != head)
 		{

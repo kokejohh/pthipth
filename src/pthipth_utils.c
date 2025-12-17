@@ -8,7 +8,7 @@
 #include <sys/mman.h>
 
 #include "pthipth_queue.h"
-#include "pthipth_prio.h"
+#include "pthipth_bq.h"
 #include "pthipth_avl.h"
 
 extern pthipth_queue_t blocked_state;
@@ -66,19 +66,19 @@ void __pthipth_change_to_state(pthipth_private_t *node, pthipth_state_t to_state
     switch (to_state)
     {
 	case BLOCKED:
-	    pthipth_prio_delete(node);
+	    pthipth_bq_delete(node);
 	    pthipth_queue_add(&blocked_state, node);
 	    break;
 	case SLEEPING:
-	    pthipth_prio_delete(node);
+	    pthipth_bq_delete(node);
 	    pthipth_queue_add(&sleeping_state, node);
 	    break;
 	case READY:
 	    if (node->state == RUNNING) break;
-	    pthipth_prio_insert(node);
+	    pthipth_bq_insert(node);
 	    break;
 	case DEFUNCT:
-	    pthipth_prio_delete(node);
+	    pthipth_bq_delete(node);
 	    break;
 	case RUNNING: break;
     }

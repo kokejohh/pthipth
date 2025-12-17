@@ -9,7 +9,6 @@
 #define MIN_QUEUE_SIZE 1
 #define SHUTDOWN 1
 
-extern pthipth_private_t *pthipth_prio_head;
 extern pthipth_queue_t sleeping_state;
 extern pthipth_queue_t blocked_state;
 

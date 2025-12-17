@@ -7,8 +7,6 @@
 #include "pthipth_prio.h"
 #include "pthipth_queue.h"
 
-extern pthipth_queue_t blocked_state;
-
 extern futex_t global_futex;
 
 pthipth_t init_owner_tid = 0;

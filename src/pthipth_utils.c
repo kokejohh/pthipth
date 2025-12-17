@@ -11,8 +11,6 @@
 #include "pthipth_prio.h"
 #include "pthipth_avl.h"
 
-extern pthipth_private_t *pthipth_prio_head;
-
 extern pthipth_queue_t blocked_state;
 extern pthipth_queue_t sleeping_state;
 

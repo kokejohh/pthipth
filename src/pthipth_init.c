@@ -9,8 +9,6 @@
 
 extern __thread pthipth_private_t *cur_pthipth;
 
-extern pthipth_private_t *pthipth_prio_head;
-
 extern futex_t global_futex;
 
 int __g_pthipth_init = 0;

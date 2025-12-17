@@ -12,6 +12,7 @@ void *task(void *arg)
 
 int main()
 {
+    pthipth_init();
     int n = 10;
     pthipth_t tid[n];
 

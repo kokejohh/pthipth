@@ -10,6 +10,8 @@ pthipth_private_t *pthipth_bq_head;
 pthipth_private_t *pthipth_bq_table[IDLE_PRIORITY + 1] = {0}; //idle is largest value.
 pthipth_private_t *pthipth_bq_table_tail[IDLE_PRIORITY + 1] = {0}; //idle is largest value.
 
+uint32_t __pthipth_bq_bitmap = 0;
+
 void pthipth_bq_insert(pthipth_private_t *node)
 {
     int p = node->priority;
@@ -27,6 +29,7 @@ void pthipth_bq_insert(pthipth_private_t *node)
 	{
 	    pthipth_bq_head = node;
 	}
+	__pthipth_bq_bitmap |= (1U << p);
     }
     else
     {
@@ -73,17 +76,16 @@ void pthipth_bq_delete(pthipth_private_t *node)
 
 	if (node == pthipth_bq_head)
 	{
-	    int tmp = 0;
-	    for (int i = pthipth_bq_head->cur_priority; i <= IDLE_PRIORITY; i++)
+	    if (pthipth_bq_table[p] != NULL)
 	    {
-		if (pthipth_bq_table[i])
-		{
-		    tmp = i;
-		    break;
-		}
+		pthipth_bq_head = node->next;
 	    }
-	    pthipth_bq_head = (pthipth_bq_table[p] == NULL) ?
-				    pthipth_bq_table[tmp] : node->next;
+	    else
+	    {
+		__pthipth_bq_bitmap &= ~(1U << p);
+		int active = __builtin_ctz(__pthipth_bq_bitmap);
+		pthipth_bq_head = pthipth_bq_table[active];
+	    }
 	}
     }
     else if (node == pthipth_bq_table_tail[p])
@@ -95,6 +97,7 @@ void pthipth_bq_delete(pthipth_private_t *node)
     node->prev = NULL;
 
     node->cur_priority = -1;
+
 }
 
 void pthipth_bq_reinsert(pthipth_private_t *node)

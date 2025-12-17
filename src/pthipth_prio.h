@@ -5,8 +5,6 @@
 
 #include "pthipth_internal_type.h"
 
-void pthipth_prio_init(pthipth_private_t *node);
-
 void pthipth_prio_insert(pthipth_private_t *node);
 
 void pthipth_prio_reinsert(pthipth_private_t *node);

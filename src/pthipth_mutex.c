@@ -103,7 +103,7 @@ int pthipth_mutex_unlock(pthipth_mutex_t *mutex)
 
     owner->mutex_count--;
     // set old priority before boost priority
-    if (owner->mutex_count == 0 && (owner->state == READY || owner->state == RUNNING))
+    if (owner->mutex_count == 0)
     {
 	owner->priority = owner->old_priority;
 	pthipth_bq_reinsert(owner);

@@ -8,11 +8,10 @@
 It is non-preemptive priority thread library inspired by pthread
 
 ### How does pthipth differ from pthread ?
-1. non-preemptive, meaning threads voluntarily yield control.
-2. support thread priorities.
-3. each thread can have a time quota.
-4. each thread has its own aging mechanism to prevent starvation.
-5. can use thread pool to manage thread creation and reuse efficiently.
+1. Non-preemptive, meaning threads voluntarily yield control.
+2. Support thread priorities.
+3. Each thread has its own aging mechanism to prevent starvation.
+4. Can use thread pool to manage thread creation and reuse efficiently.
 
 ### Basic Workflow:
 when threads are created, they block themselves using futex_wait.
@@ -24,16 +23,14 @@ both of which use futex_wake to wake the thread. Calling pthipth_yield can also 
 1. pthipth_create            2.pthipth_join                 3. pthipth_detach
 4. pthipth_yield             5. pthipth_yield_qtime         6. pthipth_exit
 7. pthipth_self              8. pthipth_sleep               9. pthipth_scanf
-10. pthipth_signal_block     11. pthipth_signal_unblock     12. pthipth_signal_print
-13. pthipth_signal_ignore    14. pthipth_signal_restore     15. pthipth_set_prio
-16. pthipth_get_prio         17. pthipth_get_stack_size     18. pthipth_get_time_quota
-19. pthipth_get_aging_factor 20. pthipth_get_aging_time
-21. pthipth_barrier_init     22. pthipth_barrier_wait       23. pthipth_barrier_destroy
-24. pthipth_cond_init        25. pthipth_cond_wait          26. pthipth_cond_wait_non
-27. pthipth_cond_signal      28. pthipth_cond_broadcast     29. pthipth_cond_destroy
-30. pthipth_mutex_init       31. pthipth_mutex_lock         32. pthipth_mutex_trylock
-33. pthipth_mutex_unlock     34. pthipth_mutex_destroy
-35. pthipth_pool_create      36. pthipth_pool_add           37. pthipth_pool_destroy
+10. pthipth_set_prio         11. pthipth_get_prio           12. pthipth_get_stack_size
+13. pthipth_get_aging_factor 14. pthipth_get_aging_time
+15. pthipth_barrier_init     16. pthipth_barrier_wait       17. pthipth_barrier_destroy
+18. pthipth_cond_init        19. pthipth_cond_wait          20. pthipth_cond_wait_non
+21. pthipth_cond_signal      22. pthipth_cond_broadcast     23. pthipth_cond_destroy
+24. pthipth_mutex_init       25. pthipth_mutex_lock         26. pthipth_mutex_trylock
+27. pthipth_mutex_unlock     28. pthipth_mutex_destroy
+29. pthipth_pool_create      30. pthipth_pool_add           31. pthipth_pool_destroy
 ```
 
 Read more [Documentation](/docs/documentation.md)
@@ -58,54 +55,14 @@ int main()
 }
 ```
 ### How to build
-###### Compiltion:
-
-```
-make
-```
-  - this is equivalent to "make all," which compiles the code, creates object files, and builds libpthipth.a and libpthipth.so, along with demo and test files.
-
-###### Library Compiltion:
-```
-make lib
-```
-  - it will create the static (libpthipth.a) and shared (libpthipth.so) libraries. To build one, use $ make static or $ make shared.
-
-###### Link header to demo and test:
-```
-make header
-```
-  - creates symbolic links for .h files from src to demo and test.
-
-###### Demo:
-```
-make demo
-```
-  - compiles the demo as a sample. [Explanation Demo](/docs/demo.md)
-
-###### Test:
-```
-make test
-```
-  - compiles the test for internal function.
-
-###### Tags:
-```
-make tags
-```
-  - this target will create tags for vim/nvim.
-
-###### Cleaning:
-```
-make clean
-```
-  - cleans all build files
-
-###### Re:
-```
-make re
-```
-  - cleans all build files and builds again.
+| Command | Description |
+| :--- | :--- |
+| `make` | **(Recommend** Build entire project |
+| `make clean` | Remove all file from build |
+| `make re` | Remove all files and build again (Re-build) |
+| `make lib` | Create the static (libpthipth.a) and shared (libpthipth.so) libraries |
+| `make demo` | Compiles the demo as a sample. [Explanation Demo](/docs/demo.md) |
+| `make tags` | Create tags for vim/nvim |
 
 ### Data Structures:
 to manage and schedule threads efficiently, this library uses the following core data structures:

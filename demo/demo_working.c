@@ -37,6 +37,8 @@ void *task2(void *arg)
 
 int main()
 {
+    pthipth_init();
+
     pthread_mutex_init(&mutex, NULL);
     int n = 1000;
     pthread_t pthreads[n];

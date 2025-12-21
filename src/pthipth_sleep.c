@@ -34,7 +34,7 @@ void __pthipth_check_sleeping()
 
     while (tmp)
     {
-	pthipth_private_t *next_tmp = tmp->next;
+	pthipth_private_t *next_tmp = tmp->next2;
 	if (tmp->state == SLEEPING && current_time >= tmp->wake_time)
 	    __pthipth_change_to_state(tmp, READY);
 	tmp = next_tmp;

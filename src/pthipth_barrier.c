@@ -56,7 +56,7 @@ int pthipth_barrier_wait(pthipth_barrier_t *barrier)
     pthipth_private_t *tmp = blocked_state.head;
     while (tmp)
     {
-	pthipth_private_t *next_tmp = tmp->next;
+	pthipth_private_t *next_tmp = tmp->next2;
 	if (tmp->state == BLOCKED && tmp->current_barrier == barrier)
 	    __pthipth_change_to_state(tmp, READY);
 	tmp = next_tmp;

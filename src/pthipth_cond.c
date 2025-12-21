@@ -33,7 +33,7 @@ int pthipth_cond_signal(pthipth_cond_t *cond)
 
     while (tmp)
     {
-	pthipth_private_t *next_tmp = tmp->next;
+	pthipth_private_t *next_tmp = tmp->next2;
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond &&
 		(selected == NULL || tmp->priority < selected->priority))
@@ -68,7 +68,7 @@ int pthipth_cond_broadcast(pthipth_cond_t *cond)
 
     while (tmp)
     {
-	pthipth_private_t *next_tmp = tmp->next;
+	pthipth_private_t *next_tmp = tmp->next2;
 
 	if (tmp->state == BLOCKED && tmp->current_cond == cond)
 	{

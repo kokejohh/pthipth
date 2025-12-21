@@ -37,6 +37,7 @@ typedef struct pthipth_private {
     int is_detach;
     // Bucket queue and queue
     struct pthipth_private *prev, *next;
+    struct pthipth_private *prev2, *next2;
     int cur_priority;
     // AVL tree
     struct pthipth_private *parent, *left, *right;

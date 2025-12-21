@@ -18,7 +18,7 @@ void __pthipth_check_detach(pthipth_private_t *node)
 
     while (tmp)
     {
-	pthipth_private_t *next_tmp = tmp->next;
+	pthipth_private_t *next_tmp = tmp->next2;
 	
 	if (node != tmp && tmp->tid_watch == 0)
 	{

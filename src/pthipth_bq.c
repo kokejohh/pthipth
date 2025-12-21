@@ -74,19 +74,9 @@ void pthipth_bq_delete(pthipth_private_t *node)
 	pthipth_bq_table[p] = (pthipth_bq_table[p] == node->next) ? NULL : node->next;
 	pthipth_bq_table_tail[p] = (pthipth_bq_table[p] == NULL) ? NULL : pthipth_bq_table_tail[p];
 
-	if (node == pthipth_bq_head)
-	{
-	    if (pthipth_bq_table[p] != NULL)
-	    {
-		pthipth_bq_head = node->next;
-	    }
-	    else
-	    {
-		__pthipth_bq_bitmap &= ~(1U << p);
-		int active = __builtin_ctz(__pthipth_bq_bitmap);
-		pthipth_bq_head = pthipth_bq_table[active];
-	    }
-	}
+	__pthipth_bq_bitmap &= ~(1U << p);
+	int active = __builtin_ctz(__pthipth_bq_bitmap);
+	pthipth_bq_head = pthipth_bq_table[active];
     }
     else if (node == pthipth_bq_table_tail[p])
     {
@@ -97,7 +87,6 @@ void pthipth_bq_delete(pthipth_private_t *node)
     node->prev = NULL;
 
     node->cur_priority = -1;
-
 }
 
 void pthipth_bq_reinsert(pthipth_private_t *node)

@@ -78,14 +78,6 @@ marks its state as SLEEPING, and then yields control to let other threads run.
 thread-friendly version of scanf. It repeatedly checks if there is input available on stdin using select() without blocking.
 If no input is ready, it yields control to other threads. When input becomes available, it reads using vscanf() and returns the result.
 
-#### pthipth_signal_block(void);
-blocks the SIGALRM signal by adding it to the process's signal mask, preventing it from interrupting the current thread.
-
-#### pthipth_signal_unblock(void);
-restores the previous signal mask (old_mask), re-enabling SIGALRM delivery.
-
-__PTHIPTH_SIGNAL_UNBLOCK() restores the previous signal mask (old_mask), re-enabling SIGALRM delivery.
-
 #### pthipth_set_prio(int new_priority);
 sets the current thread's priority to a new value and reinserts the thread into the bucket priority queue accordingly.
 
@@ -119,11 +111,7 @@ After being woken up, the thread locks the mutex again and continues execution
 makes the current thread wait on a condition variable. It blocks the thread,
 sets its state to BLOCKED, and then yields control. The thread will remain blocked
 until it is woken up by another thread.
-(The "non" means non-preemptive; if you are sure the thread won't be interrupted, you can use this function.)
-
-> If at least one thread has a time quota, you should use ```pthipth_cond_wait``` because it works with a mutex
-> to prevent race conditions and ensures safe access to shared resources while allowing preemption.
-> In contrast, ```pthipth_cond_wait_non``` is suitable for non-preemptive environments and doesn't require a mutex.
+(The "non" means non-mutex; if you are sure the thread won't be interrupted, you can use this function.)
 
 #### pthipth_cond_signal(pthipth_cond_t *cond);
 signals a condition variable by waking up the thread with the highest priority waiting on it and changing its state to READY.

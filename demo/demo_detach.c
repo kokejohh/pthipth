@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include "pthipth.h"
 
-void *task(void *arg)
+void *child_function(void *arg)
 {
-    pthipth_t tid = pthipth_self();
-    printf("tid %d\n", tid);
-    pthipth_detach(tid);
+    printf("tid %d, prio %d\n", pthipth_self(), pthipth_get_prio());
 
     return NULL;
 }
@@ -13,15 +11,23 @@ void *task(void *arg)
 int main()
 {
     pthipth_init();
-    int n = 10;
-    pthipth_t tid[n];
+
+    int n = 5;
+    pthipth_t threads[n];
+
+    pthipth_task_t task = {
+	.function=child_function,
+	.arg=NULL,
+	.priority=DEFAULT_PRIORITY
+    };
 
     for (int i = 0; i < n; i++)
-    {
-	pthipth_create(&tid[i], NULL, &(pthipth_task_t){task, NULL, DEFAULT_PRIORITY});
-    }
+	pthipth_create(&threads[i], NULL, &task);
 
     pthipth_yield();
-    
+
+    for (int i = 0; i < n; i++)
+	pthipth_detach(threads[i]);
+
     return 0;
 }

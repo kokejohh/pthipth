@@ -10,8 +10,6 @@ void *child_function(void *arg)
     if (pthipth_barrier_wait(&barrier) == PTHIPTH_BARRIER_SERIAL_THREAD)
     {
 	printf("wake other threads\n");
-	pthipth_bq_display();
-	printf("peek %d\n", pthipth_bq_peek());
     }
 
     printf("after barrier tid %d\n", pthipth_self());
